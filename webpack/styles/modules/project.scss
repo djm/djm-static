@@ -1,0 +1,158 @@
+.project {
+  list-style-type: none;
+  margin: 2rem 0;
+
+  @include breakpoint-upwards($xs-breakpoint) {
+    margin: 2rem 0;
+  }
+
+  h2,
+  h3,
+  h4,
+  h5 {
+    margin: 0;
+  }
+
+  &__header {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      align-items: flex-end;
+      flex-direction: row;
+    }
+  }
+
+  &__title {
+    font-size: 1.8rem;
+    line-height: 1.2;
+    margin: 0;
+    text-align: center;
+  }
+
+  &__title-spacer {
+    display: none;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      display: block;
+      width: 15rem;
+    }
+  }
+
+  &__year {
+    color: color(grey);
+    display: block;
+    font-size: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      flex-direction: row;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .project__body-image {
+    box-sizing: border-box;
+    display: block;
+    margin: 1rem 0 2rem -5%;
+    min-width: 15rem;
+    overflow: hidden;
+    padding: 34%;
+    position: relative;
+    width: 110%;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      margin: .4rem 0 0 0;
+      padding: 0;
+      width: 15rem;
+    }
+
+    a:link,
+    a:visited {
+      display: block;
+      min-height: 100%;
+      min-width: 100%;
+    }
+  }
+
+  &__image {
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      margin: 0;
+      width: 15rem;
+    }
+  }
+
+  &--left {
+
+    .project__title {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-right: .5rem;
+      }
+    }
+
+    .project__title-spacer {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-right: 1.5rem;
+      }
+    }
+
+    .project__body-image {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-right: 1.5rem;
+      }
+    }
+
+  }
+
+  &--right {
+
+    .project__header {
+      @include breakpoint-upwards($xs-breakpoint) {
+        flex-direction: row-reverse;
+      }
+    }
+
+    .project__title-spacer {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-left: 1.5rem;
+      }
+    }
+
+    .project__year {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-right: .5rem;
+      }
+    }
+
+    .project__body {
+      @include breakpoint-upwards($xs-breakpoint) {
+        flex-direction: row-reverse;
+      }
+    }
+
+    .project__body-text {
+      @include breakpoint-upwards($xs-breakpoint) {
+        margin-right: 1.5rem;
+        text-align: right;
+      }
+    }
+  }
+}

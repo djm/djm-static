@@ -1,0 +1,14 @@
+_model: page
+---
+flow:
+
+#### text ####
+text:
+
+## Hey! I'm Darian.
+
+I'm a software engineer & web app consultant based in South London. I make things for the net and have an interest in functional programming for the web, security, scaling & distributed systems.
+---
+title: Talking
+---
+header_image: 

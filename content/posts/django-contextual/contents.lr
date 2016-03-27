@@ -1,0 +1,58 @@
+heading: Introducing django-contextual
+---
+body:
+
+!!!! **DEPRECATED**: This project will remain on Github but development is no longer active and indeed, has not been for a considerable time (2011, circa Django 1.2). If you wish to do similar nowadays, this is definitely not how you should go about it. Please take a look at the new TemplateResponse objects instead.
+
+When working with SEO agencies you tend to get a few requests related to analytics and tracking; having said that, anyone that has actually worked with an SEO agency is probably screaming that that's a savage understatement. In a world where every conversion counts, the metrics need to be spot on so that the SEO agency can justify the amount they charge the client. Unfortunately for developers - this means a lot of time taken away from perhaps more exciting tasks and I hope this app release makes it easier in at least a few use cases (especially off-line tracking).
+
+You can check out [django-contextual on Github](https://github.com/djm/django-contextual).
+
+##General Use Case
+
+Many companies still need to track off-line sales/requests so they can better judge if their campaigns are working. A common way to do this is to have a bank of phone numbers (companies we work with have over 500+ for the same call centre) with each one being used when the user came from a specific destination or action. Therefore developers are left with the requirement of flipping out phone numbers on a given website based upon the request variables (such as `HTTP_REFERER`).
+
+This app makes that a whole load simpler: first you add in a tag called `[PHONE]` and you can place this within your templates *or* any data that that returns as plain text (such as a news post in the database for example). As long as the tag is in the plain text response sent back to the client it will get replaced either by replacement data from a matching request test *or* by the default you provide when settings the tag up.
+
+At its raw level it can handle the replacement of ANY tag (`[PHONE]` etc) in the plain text response, the contextual tests (and associated models) work in a pluggable way such that only those that are required are actually 'installed'. These tests return matches when passed the standard Django request object or None if they do not find a match. An example of a match could be matching hostnames, matching referrers, query strings which fit a pattern etc, etc - this all depends on the test used. The dynamic loading also comes with the great advantage that you can write your own contextual tests to cover cases which the standard built-in tests do not cover and "install" them simply by including their path in the `CONTEXTUAL_TESTS` setting.
+
+## How it works
+
+This isn't an explanation of how to install or a full run down of the built in tests; that will be coming with the docs shortly (hopefully) but for now you can read the README on Github. This is the general gist of the flow.
+
+```python
+CONTEXTUAL_TESTS = (
+  ('contextual.contextual_tests.RefererTest', 1),
+  ('contextual.contextual_tests.QueryStringTest', 2, {'get_key': 's'}),
+  ('contextual.contextual_tests.HostnameTest', 3),
+)
+```
+
+Given the project-level setting above `(path_to_test_class, priority, config dictionary)`, django-contextual on first load will dynamically instantiate all the tests and make them available on the app's module as `LOADED_TESTS`. The priorities are required because we can only find one match on the test (we can't and don't want to replace the tags multiple times). Due to this the tests have to be carried out sequentially and so the priority allows us to place the instantiated tests into the `LOADED_TESTS` list in the order that they should be run against. The 3rd parameter per test setting is a configuration dictionary to be passed on instantiation - whether this is required or not is dependent on the test.
+
+On instantiating a test, a number of special things happen:
+
+ * Any configuration dictionary provided is made available to the rest of the test class as an attribute.
+ * The configuration dictionary is checked against the `requires_config_keys` attribute on the test class to make sure that all required settings have been satisfied (in the sense that they exist, no more than that).
+ * Any models listed in the `required_models` attribute (*default*: empty list) are registered with Django's internal model registration system *and* with Django's internal admin model registration system (`admin.site.register`). This allows us to only install the models for the tests that we are actually going to use and goes a long way to not cluttering up the admin interface unnecessarily (future dev will entail making the admin class definable).
+
+When the request comes in, the middleware runs the request against the test method of each test class, if the test returns a match instance then it is attached to the request so that the response middleware can use it to apply the linked replacements to the response. If no match is found, then the next loaded test is carried out. It is not a problem if no matches are found as the response middleware will apply the "default" replacements for all the available tags in that case. The test is "remembered" on the session for future requests, both for speed and functionality - it is unlikely the phone number in this case will want to swap again on the next request (as it would have likely lost its referrer data etc).
+
+## The future
+
+Still to do are some further tests to increase coverage; have a look at implementing more than just session storage for persistence (cookies, cache etc); better caching or stored and retrieved contextual 'matches'; and an implementation of "request" priorities is also in the pipeline which will allow certain requests to override whatever replacements were already set on the session.
+
+!!!! **DEPRECATED**: This project will remain on Github but development is no longer active and indeed, has not been for a considerable time (2011, circa Django 1.2). If you wish to do similar nowadays, this is definitely not how you should go about it. Please take a look at the new TemplateResponse objects instead.
+
+---
+pub_date: 2011-02-21
+---
+subtitle: for contextual template replacements
+---
+summary: django-contextual is a 3rd party Django app designed to make contextual replacements easy.
+---
+header_attrib_name: Chris Chabot
+---
+header_attrib_url: https://www.flickr.com/photos/chrischabot/13714751353/in/photolist-mTVFLe-j4XSbq-dyQcAr-jJctyW-zZ3grj-zgMSh7-qcPC6Y-pg845T-e2G6Ki-qQDayK-pP2JSg-iy8S4j-dqSMLD-dPqsKJ-CxmdiU-kNzsJb-anLDME-iy8mMK-q4d5Jh-adaYGu-cWSzC5-dPqsNW-dp1gpq-iy98Jr-wg3VUj-bT2Svr-6SoGkY-64a8-6omXt2-fBb9YG-2m5c9J-7Sukvy-9fQfBY-cvfgU5-wdFAsM-8FCSdf-C5cAov-e1sq3u-2j7cr-314qr-D7spG-8J9eK-24kZ-4yfcQs-bBQmWy-8HAb4N-qw3My-7fxtV9-2EXaQj-aYsu3r
+---
+header_image: header.jpg

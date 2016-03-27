@@ -1,0 +1,40 @@
+For s3 help, see http://quiet-cove-8872.herokuapp.com/
+
+/contact/                                                                  /about/
+/elixir-keyword-lists-function-parameters/                                 /posts/elixir-keyword-lists-function-parameters/
+/cryptographic-hash-functions-elixir-generating-hex-digests-md5-sha1-sha2/ /posts/cryptographic-hash-functions-elixir-generating-hex-digests-md5-sha1-sha2/
+/protect-yourself-from-non-obvious-dangers-curl-url-pipe-sh/               /posts/protect-yourself-from-non-obvious-dangers-curl-url-pipe-sh/
+/reveal-rss-feed-url-itunes-podcast/                                       /posts/reveal-rss-feed-url-itunes-podcast/
+/duplicate-urls/                                                           /posts/duplicate-urls/
+/python-multiple-line-conditions-and-all-builtin/                          /posts/python-multiple-line-conditions-and-all-builtin/
+/how-to-log-file-django-13-and-above/                                      /posts/how-to-log-file-django-13-and-above/
+/using-django-auth-ldap-active-directory-ldaps/                            /posts/using-django-auth-ldap-active-directory-ldaps/
+/wordpress-nginx-reverse-proxy-caching-setup/                              /posts/wordpress-nginx-reverse-proxy-caching-setup/
+/fauna-flora-nginx-reverse-proxy-results/                                  /posts/fauna-flora-nginx-reverse-proxy-results/
+/django-contextual/                                                        /posts/django-contextual/
+/djangos-little-protections-word-redirect-dangers/                         /posts/djangos-little-protections-word-redirect-dangers/
+/enhance-pdb-debugging-ipdb-ipython/                                       /posts/enhance-pdb-debugging-ipdb-ipython/
+/radio-tray-perfect-example-do-one-thing-do-it-well/                       /posts/radio-tray-perfect-example-do-one-thing-do-it-well/
+/2/                                                                        /
+/feeds/rss/blog/post/                                                      /feed.xml
+/feeds/atom/blog/post/                                                     /feed.xml
+
+
+/contact                                                                   /about/
+/elixir-keyword-lists-function-parameters                                  /posts/elixir-keyword-lists-function-parameters/
+/cryptographic-hash-functions-elixir-generating-hex-digests-md5-sha1-sha2  /posts/cryptographic-hash-functions-elixir-generating-hex-digests-md5-sha1-sha2/
+/protect-yourself-from-non-obvious-dangers-curl-url-pipe-sh                /posts/protect-yourself-from-non-obvious-dangers-curl-url-pipe-sh/
+/reveal-rss-feed-url-itunes-podcast                                        /posts/reveal-rss-feed-url-itunes-podcast/
+/duplicate-urls                                                            /posts/duplicate-urls/
+/python-multiple-line-conditions-and-all-builtin                           /posts/python-multiple-line-conditions-and-all-builtin/
+/how-to-log-file-django-13-and-above                                       /posts/how-to-log-file-django-13-and-above/
+/using-django-auth-ldap-active-directory-ldaps                             /posts/using-django-auth-ldap-active-directory-ldaps/
+/wordpress-nginx-reverse-proxy-caching-setup                               /posts/wordpress-nginx-reverse-proxy-caching-setup/
+/fauna-flora-nginx-reverse-proxy-results                                   /posts/fauna-flora-nginx-reverse-proxy-results/
+/django-contextual                                                         /posts/django-contextual/
+/djangos-little-protections-word-redirect-dangers                          /posts/djangos-little-protections-word-redirect-dangers/
+/enhance-pdb-debugging-ipdb-ipython                                        /posts/enhance-pdb-debugging-ipdb-ipython/
+/radio-tray-perfect-example-do-one-thing-do-it-well                        /posts/radio-tray-perfect-example-do-one-thing-do-it-well/
+/2                                                                         /
+/feeds/rss/blog/post                                                       /feed.xml
+/feeds/atom/blog/post                                                      /feed.xml

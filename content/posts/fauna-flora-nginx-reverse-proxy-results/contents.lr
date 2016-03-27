@@ -1,0 +1,55 @@
+heading: NGINX as a reverse caching proxy: part 1
+---
+body:
+
+This is a 2 part article on using Nginx as a reverse proxy in-front of Apache (running Wordpress) while caching all responses; first we show the results and then [how to replicate them in Part Two](/wordpress-nginx-reverse-proxy-caching-setup/).
+
+##Part 1 of 2
+
+On the 1st November 2010, [Fauna & Flora International](http://www.fauna-flora.org) relaunched their new content-managed website design built by [blackrabb.it](http://blackrabb.it) and [abstraktion](http://www.abstraktion.co.uk) (namely Pete Coles & Chris Garrett). Fauna & Flora are one of the largest charities caring for both plants and animals and as such have a rather large list of celebrities as their Vice Presidents: Stephen Fry, Sir David Attenborough & Dame Judi Dench to name a few. As many of you may know, Stephen Fry is avid twitter user with a rather formidable following of approximately 2 million other twitter users and this rises by the day.
+
+![Fauna & Flora](/posts/fauna-flora-nginx-reverse-proxy-results/fauna-flora.png)
+
+See where I'm going with this yet? While the server is way more than capable of happily serving up the site to Fauna & Flora's average daily traffic levels - the sporadic and intense spikes caused by the likes of [Stephen Fry's twitter crew](http://twitter.com/stephenfry/status/13773345592) have and continue to wreak havoc on an unexpected basis. [Pete](http://www.petercolesdc.com) brought me in at the end of the build to try and get a solution in place for the launch of the new project.
+
+##Before (a.k.a the untimely death of Apache)
+
+The first thing that should always take place before any kind of optimisation is to snapshot and record what it was like before - this applies to many things but particularly in the case of load optimisation; how else do you measure your success?
+
+With this in mind, and with Apache set up with [Plesk](http://www.parallels.com/uk/products/plesk/) and [MediaTemple](http://mediatemple.net/)'s default configuration, I ran a load test on the server which at this point had no other traffic visiting it as it was on a development address. The load test was provided by the kind people at [LoadImpact](http://loadimpact.com/) and the results can be seen in graph form below:
+
+![Pre NGINX](/posts/fauna-flora-nginx-reverse-proxy-results/fauna-flora-pre-nginx.png)
+
+* via [LoadImpact](http://loadimpact.com/)
+
+Put simply? Abyssal. But remember, this is a straight out-of-the-box setup.
+
+As you can see the initial page response times even without any heavy load are incredibly slow; some may say this is down to Wordpress but as we're simply serving generated HTML that doesn't change frequently, there really is no excuse for such performance. The test ran for 13 minutes after which the response time peaked heavily and LoadImpact cancelled the rest of the test so as not to take the site down. During those 13 minutes, Apache managed to serve up close to 13,000 page requests and just about handle ~25 simultaneous clients; however, we needed more. 
+
+The next step was either to optimise the out-of-the-box Apache configuration or, as we chose, to change the service architecture to let another HTTP server handle the connections and hopefully caching.
+
+##After (with nginx set up to reverse proxy)
+
+After about an hour of configuring nginx and X hours of getting Plesk to run Apache on port 81 instead of 80 (it absolutely loves rewriting over the hard work you put into changing the configs) we were set up with nginx sitting on port 80 talking to Apache on localhost:81. This way nginx handles all the connections for both dynamic and static media and only talks to Apache when it needs data to fill the current request (any dynamic pages). With caching enabled it will check the cache first to check if there is a non-expired key to use as the response, and thus we cut down the actual amount of connections hitting Apache considerably. There will be more talk of that in the more technical post later; for now, check the results:
+
+![Post NGINX](/posts/fauna-flora-nginx-reverse-proxy-results/fauna-flora-post-nginx.png)
+
+* via [LoadImpact](http://loadimpact.com/)
+
+The first thing to note is the vastly reduced access times (considering LoadImpact are in Stockholm and MediaTemple are state-side), down to a constant 3.5s instead of the 5-6s we had before. The second thing to note, and probably the first you thing you realise, is the flatness of the graph - extra clients made exactly "sod all difference" (that's the scientific term). It managed to handle 50 simultaneous clients without the actual server load (monitored via SSH) even rising above 0.1; this far surpasses Apache which died after about 25 but more importantly, the flatness here and the load via SSH show that it can in fact handle handle far more than that - how much more I would love to know but as this was for a charity I couldn't afford the outlay of paying more to LoadImpact. Overall, it handled over 52,000 requests in 15 minutes which is a much better 60-ish requests per second without even shedding so much as a tear. 
+
+##The Nginx setup
+
+This post would be incredibly long had it have entailed that also, so I've split the more technical specs of the module and configuration required to get nginx [reverse proxy-ing infront of Apache into a separate post](/posts/wordpress-nginx-reverse-proxy-caching-setup/).
+---
+pub_date: 2011-04-03
+---
+subtitle: for reducing response times with Wordpress
+---
+summary: Using nginx as a reverse caching proxy infront of Apache running Wordpress to alleviate the issues caused by a tweet from Stephen Fry.
+---
+header_attrib_name: Ben Britten
+---
+header_attrib_url: https://www.flickr.com/photos/tauntingpanda/14782435/in/photolist-2iLiz-tv4y3-iDtu7-tSFZS-5An39W-994snK-eByLK-7j9uCQ-HH38a-fseBv1-wNU7T-ws4rg-azrDHS-aD6eJt-7Pv1mX-9ZpJSk-83NhDH-9dqxUH-kQuUwb-j2V4w-6giQve-3q64gF-p9KQY-dCHWms-7j8X6G-jq5Jb2-ocW95Y-6S8Xdn-eFLFaF-azrxcs-nszouK-znuaBG-71g5N-7Rj96G-78QjBg-eeyTx6-o2KyhD-3k2y29-5aPPfn-2oixGs-5Y1mxr-jwtB8c-3hTSoA-s4mb5U-9Dvc1e-78Qc2c-8LEhUo-7jJ9Go-ejJqnY-9DZjPp
+---
+header_image: header.jpg

@@ -1,0 +1,345 @@
+heading: NGINX as a reverse caching proxy: part 2
+---
+body:
+
+Having previously written about the success of using [nginx to reverse cache infront of Apache](/fauna-flora-nginx-reverse-proxy-results/), I thought I'd follow up with a post on exactly how to tailor that to Wordpress specifically.
+
+##Part 2 of 2
+
+The entire production nginx configuration is **available in one chunk at the end of this post** but let's go through it bit-by-bit and explain away. This configuration is dumped directly from the main nginx.conf so that it contains everything - this will only work directly in situations where you are running one site of an instance. If you wish to host multiple sites off one server, that is easily possible with a little editing of the nginx and apache config files but that is left as a task to the reader (read about includes).
+
+```nginx
+user apache apache;
+worker_processes 4;
+
+error_log /var/log/nginx/error.log;
+
+events {
+    worker_connections  1024;
+}
+```
+
+The first line is the user and group you wish to run nginx under, in this case 'apache' and 'apache' due to it being on a Plesk-based machine. This also sets the location of the error log and from this we can calculate the theoretical maximum amount of connections we can support (worker_processes * worker_connections) - in this case ~4000. The worker_processes setting should ideally be equal to the amount of processor cores you have available to you (see the output of `cat /proc/cpuinfo | grep processor`).
+
+```nginx
+include /etc/nginx/mime.types;
+default_type application/octet-stream;
+
+# Defines the cache log format, cache log location
+# and the main access log location.
+log_format cache '***$time_local '
+    '$upstream_cache_status '
+    'Cache-Control: $upstream_http_cache_control '
+    'Expires: $upstream_http_expires '
+    '$host '
+    '"$request" ($status) '
+    '"$http_user_agent" '
+    'Args: $args '
+    'Wordpress Auth Cookie: $wordpress_auth ';
+access_log /var/log/nginx/cache.log cache;
+access_log /var/log/nginx/access.log;
+```
+
+The first line here defines some mime-types and defaults which should exist in most nginx configurations; the following log_format setting funnily enough sets the format for the log: we include a lot of extra information here to make it easier for us to debug later (such as whether the Wordpress Auth cookie has been set, the browser user-agent and request status code etc). Most of the variables used here are part of the global nginx set available to the config files but some (such as the $wordpress_auth one) are custom set later within the file. '*cache*' is the name given to this log format so you can use it in the next lines. 
+
+Here we set 2 different access logs, one with the log format we just specified (*cache*) and one with the default access log format; this is purely to make debugging easier and is not necessary (although I would advise having at least one access log).
+
+```nginx
+# Proxy cache and temp configuration.
+proxy_cache_path /var/www/nginx_cache levels=1:2
+                 keys_zone=main:10m
+                 max_size=1g inactive=30m;
+proxy_temp_path /var/www/nginx_temp;
+```
+
+This section requires the pre-requisite caching module I went through earlier; the [proxy_cache_path](http://wiki.nginx.org/HttpProxyModule#proxy_cache_path) and [proxy_temp_path](http://wiki.nginx.org/HttpProxyModule#proxy_temp_path) are both attached to the [HttpProxyModule](http://wiki.nginx.org/HttpProxyModule) we installed earlier which handles the caching of requests.
+
+Cached request data is stored as simple files where the filename is an MD5 hash of the proxied URL. The proxy_cache_path setting sets the absolute file path to the storage location of each cache while also providing deeper options involving key zones, levels, max cache size and cache invalidation options. A quick explanation of those:
+
+* **Levels** - The *levels* argument sets the number of subdirectories the cache will delve into it. I'm going to be honest and say I don't know why this is a setting - there's lots of misinformation about and I couldn't find anything decent on it (the docs do not explain it well enough currently). Get in touch if you know and I can update this but for now 1:2 caches the files two directories down and seems to be what most people do.
+
+* **Key Zone** - This is the name and size of the shared memory allocation for this cache (in memory, not on disk cache). You name it so you can use it in the location directive later and the size is obvious; here we give it 30mb which is actually way more than adequate for a site of this size.
+ 
+* **Cache Size** - This is the maximum size (*max_size*) your cache will take up *on disk* before the <del>oldest</del> least-recently used cached requests start being cleaned up to make room for the new ones.
+
+* **Cache Invalidation** - The setting here is called *inactive* and provides the amount of time a cached request should remain 'valid'. This can be set to *30m* (30 minutes), *2h* (2 hours), *3d* (3 days) etc, etc.
+
+```nginx
+# Gzip Configuration.
+gzip on;
+gzip_disable msie6;
+gzip_static on;
+gzip_comp_level 4;
+gzip_proxied any;
+gzip_types text/plain
+           text/css
+           application/x-javascript
+           text/xml
+           application/xml
+           application/xml+rss
+           text/javascript;
+```
+
+Here we have some fun with enabling gzip. To go through it quickly line by line: turn compression on; disable compressed serving to IE6 which can't handle it well; compress static media before serving; set the compression level (tradeoffs between bandwidth saved and speed); compress responses returned from proxied material (in this case our response from Apache); and then a list of mimetypes that we will be compressing (mostly plain text here as you can see).
+
+```nginx
+upstream backend {
+    # Defines backends.
+    # Extracting here makes it easier to load balance
+    # in the future. Needs to be specific IP as Plesk
+    # doesn't have Apache listening on localhost.
+    ip_hash;
+    server xxx.xxx.xxx.xxx:81; # IP goes here.
+}
+```
+
+Defining an upstream handler called *backend* allows us to proxy pass to this later easily and also makes it easier for us to add more backend servers in the future. Plesk doesn't have Apache serving on anything but specific IPs so in this case we specify the exact one but `localhost:81` or `127.0.0.1:81` should work in most cases (provided you have Apache set to run on Port 81 obviously).
+
+```nginx
+server {
+    listen xxx.xxx.xxx.xxx:80; # IP goes here..
+    server_name fauna-flora.org www.fauna-flora.org xxx.xxx.xxx.xxx; # IP could go here.
+
+    # Set proxy headers for the passthrough
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    # Let the Set-Cookie header through.
+    proxy_pass_header Set-Cookie;
+```
+
+*listen* tells the nginx to listen on a certain IP address on a certain port (this case 80, the default one for HTTP) for all incoming connections. The *server_name* direction is a mixture of ServerName and ServerAlias directions from Apache; you can specify as many domains, wildcards or IPs here and as soon as the HTTP_HOST header of an incoming request matches an alias it will use this configuration to serve the page.
+
+As NGINX is accepting the incoming connection to the server and passing it to Apache interally, we need to make sure certain headers from the original request 'get through' to Apache; this means specifically setting them via the proxy_set_header method which accepts the name of the header to set as it's first parameter and the value to use as it's second. Here it sets the relevant headers so that Apache can see who the connection originally came from and what it was looking for (so that it can pick the right Apache .conf to use for serving).
+
+```nginx
+
+    ## domain.org -> www.domin.org (301 - Permanent)
+    if ($host ~* ^([a-z0-9]+\.org)$) {
+        set $host_with_www www.$1;
+        rewrite ^(.*)$
+        http://$host_with_www$1 permanent;
+    }
+```
+
+Here we simply redirect the non-www version of the domain to the www version - this is mainly for SEO so that we don't get a duplicate content hit from Google (as they would technically be two different domains serving the same content).
+
+```nginx
+    # Max upload size: make sure this matches the php.ini in .htaccess
+    client_max_body_size 8m;
+
+    # Catch the wordpress cookies.
+    # Must be set to blank first for when they don't exist.
+    set $wordpress_auth "";
+    if ($http_cookie ~* "wordpress_logged_in_[^=]*=([^%]+)%7C") {
+        set $wordpress_auth wordpress_logged_in_$1;
+    }
+```
+
+We set the *client_max_body_size* to match whatever you have the post_max_size & upload_max_filesize in your php.ini set to; this allows large files to be uploaded in the admin without nginx timing out.
+
+The next bit sets a variable called $wordpress_auth if the wordpress_logged_in cookie is set (meaning a user is logged in); this allows us to conditionally cache later in the location directive.
+
+```nginx
+    # Set the proxy cache key
+    set $cache_key $scheme$host$uri$is_args$args;
+```
+
+Here the cache key is set, this is the string which will end up getting MD5'd and saved on disk as the filename. Here it is made up of the scheme (http/https), the hostname, the $uri - which is the full post-rewrite path without query string, and $is_args which provides the ? and $args which provides the full query string. This allows us to be pretty specific in the page requests we cache.
+
+```nginx
+     location ~* ^/(wp-content|wp-includes)/(.*)\.(gif|jpg|jpeg|png|ico|bmp|js|css|pdf|doc)$ {
+       root /var/www/vhosts/fauna-flora.org/httpdocs;
+    }
+```
+
+All media (including uploads) is under wp-content/ or wp-includes/ so instead of caching the response from Apache, we just use nginx to serve directly from there for any media paths; this saves Apache serving any static media at all which greatly helps when trying to optimise Apache to serve dynamic requests better.
+
+```nginx
+    # Don't cache these pages.
+    location ~* ^/(wp-admin|wp-login.php)
+    {
+        proxy_pass http://backend;
+    }
+ ```
+
+The problem with caching all responses is that there are some we definitely do not want to cache, such as the admin and the login responses. Here we exclude both of those from the location directive below by defining them first and we pass them directly through to our upstream Apache without doing any caching.
+
+```nginx
+    location / {
+        proxy_pass http://backend;
+        proxy_cache main;
+        proxy_cache_key $cache_key;
+        proxy_cache_valid 30m; # 200, 301 and 302 will be cached.
+        # Fallback to stale cache on certain errors.
+        # 503 is deliberately missing, if we're down for maintenance
+        # we want the page to display.
+        proxy_cache_use_stale error
+                              timeout
+                              invalid_header
+                              http_500
+                              http_502
+                              http_504
+                              http_404;
+        # 2 rules to dedicate the no caching rule for logged in users.
+        proxy_cache_bypass $wordpress_auth; # Do not cache the response.
+        proxy_no_cache $wordpress_auth; # Do not serve response from cache.
+    }
+}
+```
+ 
+And the final directive! This one matches all remaining paths that we haven't already caught and caches their response. We'll go through each bit individually:
+
+* **proxy_pass**: This allows us to pass the request through to our upstream Apache.
+* **proxy_cache**: This tells nginx which named key_zone cache to use for all requests hitting this location directive.
+* **proxy_cache_key**: Sets the cache key to use in the MD5 calc; we set this up above.
+* **proxy_cache_valid**: Without specifying certain status code responses here (200,404 etc) this provides the default amount of time that the cache's remain valid. Don't set this longer than the inactive parameter in your proxy_cache_path as it will have no effect.
+* **proxy_cache_use_stale**: Sets when we should fall back to stale (expired) cache if it exists. Here we fall back if required when there has been: an error; an invalid header sent; and for the HTTP status codes 500, 502, 504, and 404. We deliberately don't put 503 (the maintenance code) here as we wish to display that page when we are down for scheduled maintenance.
+* **[proxy_cache_bypass](http://wiki.nginx.org/HttpProxyModule#proxy_cache_bypass)**: We set this variable earlier, it basically is true if the Wordpress auth cookie is set, and therefore we do not cache. See the link for a better explanation from the docs.
+* **[proxy_no_cache](http://wiki.nginx.org/HttpProxyModule#proxy_no_cache)**: Explained better in the docs.
+
+And that's about it, the file is left below in it's entirety:
+
+##The entire file for your pasting desires.
+
+```nginx
+user apache apache;
+worker_processes 4;
+
+error_log /var/log/nginx/error.log;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # Defines the cache log format, cache log location
+    # and the main access log location.
+    log_format cache '***$time_local '
+        '$upstream_cache_status '
+        'Cache-Control: $upstream_http_cache_control '
+        'Expires: $upstream_http_expires '
+        '$host '
+        '"$request" ($status) '
+        '"$http_user_agent" '
+        'Args: $args '
+        'Wordpress Auth Cookie: $wordpress_auth '
+        ;
+    access_log /var/log/nginx/cache.log cache;
+    access_log /var/log/nginx/access.log;
+
+    # Proxy cache and temp configuration.
+    proxy_cache_path /var/www/nginx_cache levels=1:2
+                     keys_zone=main:10m
+                     max_size=1g inactive=30m;
+    proxy_temp_path /var/www/nginx_temp;
+
+    # Gzip Configuration.
+    gzip on;
+    gzip_disable msie6;
+    gzip_static on;
+    gzip_comp_level 4;
+    gzip_proxied any;
+    gzip_types text/plain
+               text/css
+               application/x-javascript
+               text/xml
+               application/xml
+               application/xml+rss
+               text/javascript;
+
+    upstream backend {
+        # Defines backends.
+        # Extracting here makes it easier to load balance
+        # in the future. Needs to be specific IP as Plesk
+        # doesn't have Apache listening on localhost.
+        ip_hash;
+        server xxx.xxx.xxx.xxx:81; # IP goes here.
+    }
+
+    server {
+	listen xxx.xxx.xxx.xxx:80; # IP goes here.
+        server_name fauna-flora.org www.fauna-flora.org xxx.xxx.xxx.xxx; # IP could go here.
+
+        # Set proxy headers for the passthrough
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # Let the Set-Cookie header through.
+        proxy_pass_header Set-Cookie;
+
+        ## domain.org -> www.domin.org (301 - Permanent)
+        if ($host ~* ^([a-z0-9]+\.org)$) {
+            set $host_with_www www.$1;
+            rewrite ^(.*)$
+            http://$host_with_www$1 permanent;
+        }
+
+	# Max upload size: make sure this matches the php.ini in .htaccess
+        client_max_body_size 8m;
+
+        # Catch the wordpress cookies.
+        # Must be set to blank first for when they don't exist.
+        set $wordpress_auth "";
+        if ($http_cookie ~* "wordpress_logged_in_[^=]*=([^%]+)%7C") {
+            set $wordpress_auth wordpress_logged_in_$1;
+        }
+
+	# Set the proxy cache key
+        set $cache_key $scheme$host$uri$is_args$args;
+
+        # All media (including uploaded) is under wp-content/ so
+        # instead of caching the response from apache, we're just
+        # going to use nginx to serve directly from there.
+        location ~* ^/(wp-content|wp-includes)/(.*)\.(gif|jpg|jpeg|png|ico|bmp|js|css|pdf|doc)$ {
+            root /var/www/vhosts/fauna-flora.org/httpdocs;
+        }
+
+	# Don't cache these pages.
+        location ~* ^/(wp-admin|wp-login.php)
+{
+            proxy_pass http://backend;
+        }
+
+	location / {
+            proxy_pass http://backend;
+            proxy_cache main;
+            proxy_cache_key $cache_key;
+            proxy_cache_valid 30m; # 200, 301 and 302 will be cached.
+            # Fallback to stale cache on certain errors.
+            # 503 is deliberately missing, if we're down for maintenance
+# we want the page to display.
+            proxy_cache_use_stale error
+                                  timeout
+                                  invalid_header
+                                  http_500
+                                  http_502
+                                  http_504
+                                  http_404;
+            # 2 rules to dedicate the no caching rule for logged in users.
+            proxy_cache_bypass $wordpress_auth; # Do not cache the response.
+            proxy_no_cache $wordpress_auth; # Do not serve response from cache.
+        }
+
+	# Cache purge URL - works in tandem with WP plugin.
+        location ~ /purge(/.*) {
+            proxy_cache_purge main "$scheme://$host$1";
+        }
+    } # End server
+} # End http
+```
+---
+pub_date: 2011-04-07
+---
+subtitle: for reducing response times with Wordpress
+---
+header_attrib_name: Michael Yuen
+---
+header_attrib_url: https://www.flickr.com/photos/mikeyyuen/11680879193/in/photolist-iNcyqR-p56eYi-2Cqzh-saDAw7-9Cec79-9CdNP5-ejCN5t-9futhb-nT8y9J-9DZgwT-C7h1yk-ecy1Wm-81Sg8e-a16W4D-dGaPck-dPGQFf-s5YEEa-4Ngztu-ab2ccY-poexBs-7eEmr1-9CdLYE-9CaRMP-8W9r7C-mvfDBr-5bMgfv-qNsmVr-bGwnZc-ejJv7f-q33mXA-bGwjrV-oU6Yio-fpLRzV-pvKmbq-3LpQPu-ptaNxU-4Kd1u3-3aasE-5RuZse-8oKorF-6mzsgN-6mzrEb-6mvgUH-6mzpHf-6mzp4C-ssf8Wz-7xJsHQ-8Fx1BW-6bQm49-8X1zb7
+---
+header_image: header.jpg

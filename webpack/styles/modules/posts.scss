@@ -1,0 +1,65 @@
+.posts-container {
+
+  footer {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+}
+
+.posts {
+  margin: -1rem 0 3rem 0;
+
+  @include breakpoint-upwards($xs-breakpoint) {
+    margin: 0 0 3rem 0;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    list-style-type: none;
+    margin: 0 0 1.5rem 0;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      flex-direction: row;
+      margin: 0 0 .5rem 0;
+    }
+  }
+
+  &__item-link:link,
+  &__item-link:visited {
+    text-align: left;
+    text-decoration: none;
+    transition: color .2s ease-in;
+  }
+
+  &__item-link:hover,
+  &__item-link:active,
+  &__item-link:focus {
+    @include fancy-underlines(color(highlight-active), color(background), color(text-selection));
+  }
+
+  &__item-title {
+    display: inline;
+    font-size: 1.1rem;
+    margin: 0;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      margin: 0;
+    }
+  }
+
+  &__item-date {
+    @include sans-serif;
+    color: color(grey);
+    font-size: .7rem;
+    font-weight: 300;
+    text-transform: uppercase;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      font-weight: bold;
+      line-height: 3.1;
+    }
+  }
+}

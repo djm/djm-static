@@ -1,0 +1,3 @@
+{% macro render_twitter_button(url, text) %}
+<a class="twitter__button" href="https://twitter.com/intent/tweet?text={{ text|urlencode }}&url={{ url|urlencode }}&via=djm_"></a>
+{% endmacro %}

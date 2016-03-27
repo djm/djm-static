@@ -1,0 +1,71 @@
+heading: Logging to file in Django > 1.3
+---
+body:
+
+As I'm sure you're well aware, [Django 1.3 brought with it](https://docs.djangoproject.com/en/dev/releases/1.3/#logging) a unified way of using the Python [logging module](http://docs.python.org/library/logging.html) as part of your Django app/project. Before this existed, everyone had their own way to handle logging so it's great to have a pluggable interface which you can guarantee will be there provided the user is using 1.3+.
+
+Logging to file is actually rarity for me personally these days due a couple of things: 1) using the StreamHandler to output straight to the `runserver` command line output and 2) because of the excellent logging [Sentry](https://github.com/dcramer/django-sentry) can provide on production servers where you don't get to see the std output.
+
+However, sometimes you're still in a situation where you can't use either of these or would just simply like to log to a local file because it's quick and easy. The following code in your `settings.py` will help with that:
+
+```python
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'stream_to_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': here('random_log.log'),
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins', 'stream_to_console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'another_random_logger': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}
+```
+
+As you can see, there are two new handlers on top of Django's `'mail_admin'` default: `'stream_to_console'` will log using Python's `StreamHandler` and therefore output to the terminal (when using `runserver`); and `'file'` will use Python's `FileHandler` logger to output to the `filename` specified. To get your loggers to use these, their name needs to be included in the `'handlers'` list of the individual loggers (also defined above - see `'another_random_logger'`). I haven't used them here, but the docs detail full usage of [filters](https://docs.djangoproject.com/en/dev/topics/logging/#topic-logging-parts-filters) and [formatters](https://docs.djangoproject.com/en/dev/topics/logging/#topic-logging-parts-formatters).
+
+You will notice my `filename` entry uses a callable to return the correct value; this is so the filename can be specified relative to the project directory as opposed to hard-coding the path in your settings file. The same function gets uses to work out `STATIC/MEDIA_ROOT`'s etc; hard-coding that kind of absolute path in your settings is not advised (but may make sense if you're logging somewhere specific, say `/var/log/`).
+
+The function is below for anyone wishing to use that tactic:
+
+```python
+here = lambda *x: os.path.join(os.path.dirname(
+                               os.path.realpath(__file__)), *x)
+# Given the file you run this is located in
+# /home/djm/projects/some_project/ this
+# will give you the following:
+>>> here('some_log.log')
+/home/djm/projects/some_project/some_log.log
+>>> here('..', '..', 'some_log.log')
+/home/djm/some_log.log
+```
+---
+pub_date: 2011-08-04
+---
+subtitle: by utilising the new logging dictionary setting
+---
+header_attrib_name: Joe Shlabotnik
+---
+header_attrib_url: https://www.flickr.com/photos/joeshlabotnik/2503128814/in/photolist-4PcbZm-6axukH-4wsAwd-npGrYh-vm63a7-8bpXdE-3xHFC-fzxuja-tWQjxE-ByoNpk-pUVLnt-oLfZyJ-iTtLR3-9MDYdw-2fWYGw-raXX3Q-q4euQJ-5YGQN1-obyHED-yB2yjV-ph6pLA-tVgbWv-dXBMYu-fCzY3L-nVxMi2-fxupMQ-b1gQVc-3qdwAf-sv93o3-rsfwX3-BJPUaP-ksZoB-8Tu3Qx-spnWxQ-y3x6K-peWyy9-eLdxkr-BJfLf-nKBgiH-6dbakA-3mhogo-7gN6uA-WjMs6-q2zNMu-a4rEk-vwHkPv-DM53zw-6azu4h-8mppuE-97B3Yi
+---
+header_image: header.jpg

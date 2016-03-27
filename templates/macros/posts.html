@@ -1,0 +1,16 @@
+{% macro render_posts(posts) %}
+
+  <ul class="posts">
+    {% for post in posts %}
+      <li class="posts__item">
+        <h4 class="posts__item-title">
+          <a class="posts__item-link" href="{{ post|url }}" title="{{ post.subtitle }}">
+            {{ post.heading }}
+          </a>
+        </h4>
+        <time class="posts__item-date" datetime="{{ post.pub_date }}" title="{{ post.pub_date }}">{{ post.pub_date.strftime("%d %B %Y") }}</time>
+      </li>
+    {% endfor %}
+  </ul>
+
+{% endmacro %}

@@ -1,0 +1,4 @@
+{% set img = record.attachments.images.get(this.image) %}
+{% if img %}
+  <img class="image" {% if record.lazy_load_images %}data-normal{% else %}src{% endif %}="{{ img|url }}" alt="{{ this.label }}" title="{{ this.label }}">
+{% endif %}

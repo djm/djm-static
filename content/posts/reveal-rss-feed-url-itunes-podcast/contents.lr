@@ -1,0 +1,33 @@
+heading: Find out the RSS feed for an iTunes podcast
+---
+body:
+
+To cut a long story short: I listen to music podcasts a lot and unfortunately a lot of record labels syndicate their content via Apple's iTunes network. Apple seem to go out of their way to make finding the actual original source podcast feed a complete nuisance to find and I absolutely detest iTunes so I wrote this to grab it for me. Now that lovely rant is over, you can use it too..
+
+##Install the bookmarklet
+
+1. Drag the following link to your browser's bookmarks bar: <a href="javascript:(function(){var%20newScript=document.createElement('script');newScript.src='https://cdn.rawgit.com/djm/uncover-itunes-rss-bookmarklet/master/bookmarklet.js';document.body.appendChild(newScript);})();">itunes-to-rss</a>
+
+2. Then visit an appropriate iTunes podcast page, e.g: [The Critical Music podcast](https://itunes.apple.com/gb/podcast/critical-podcast/id293017397).
+
+3. Click the bookmarklet while on the page to reveal the true RSS podcast URL/content feed.
+
+4. Rejoice in the fact you no longer have to load up iTunes. For the time being anyway.
+
+##Github
+
+The project can be found on Github here: [uncover-itunes-rss-bookmarklet](https://github.com/djm/uncover-itunes-rss-bookmarklet).
+
+
+---
+pub_date: 2012-12-11
+---
+subtitle: Apple hides these to make to force iTunes usage
+---
+header_attrib_name: K putt
+---
+header_attrib_url: https://www.flickr.com/photos/k_putt/11792034414/in/photolist-iY2g1b-aC6dCi-mF55Pv-fDVD71-hf4z6-y7tDUr-9RpstC-72hXSg-dFxFBv-3MiXpn-87Te8V-7D9Eyf-cCTs3j-wCUX7-gVo63P-47zLGV-pk1bHJ-aSKbfr-7CfoiH-7R3tcd-4g6wUa-9zFmin-fLcamn-iQizjS-2xHS4v-7eo7Jo-73zAEn-kjkJ5N-xRuJpo-sXSxJz-xMErMX-h1ahBN-eKeYBB-8e1Pdt-6GrAFm-7g93YP-q9KQL6-bAc1Qv-7yQQ3L-8Qnoyb-n5t6gF-77KW8j-794k5H-bXY2RA-umk39-6UaHyi-9YwdZ2-dQZ7zh-aiTz6W-BSGyjx
+---
+header_image: header.jpg
+---
+summary: Find the RSS podcast feed for an Apple iTunes podcast, so that you can use an external app to consume it

@@ -1,0 +1,27 @@
+// Neat grid
+$column: 50px;
+$gutter: 30px;
+$grid-columns: 12;
+$max-width: 940px;
+
+// Breakpoints
+$xs-breakpoint: 684px;
+$sm-breakpoint: 940px;
+$md-breakpoint: 1120px;
+
+// Colors
+$highlight: #00ab7c;
+
+$colors:
+(
+  background: #fff,
+  highlight: $highlight,
+  highlight-active: #1e8bc3,
+  grey: #9e9e9e,
+  dark-grey: #5a5a5a,
+  text-selection: #e8f7ff,
+  note: $highlight,
+  info: #3498db,
+  tip: #f39c12,
+  warning: #e74c3c,
+);

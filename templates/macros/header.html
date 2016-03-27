@@ -1,0 +1,27 @@
+{% macro render_header(page, background_url, height=250, index=true) %}
+    <header class="header" style="background-image: url('{{ background_url|url }}'); height: {{ height }}px;">
+      <div class="container container--xs leader">
+        <div class="leader__title">
+          <a href="/">
+          {% if index %}
+            <h1>Darian Moody.</h1>
+            <h2>Elixir & Python Developer, London</h2>
+          {% else %}
+            <h4>Darian Moody.</h4>
+            <h5>Elixir & Python Developer, London</h5>
+          {% endif %}
+          </a>
+        </div>
+        <nav class="navigation">
+          <ul>
+            <li{% if page._path == '/' or '/posts/' in page._path %} class="active"{% endif %}><a href="{{ '/'|url }}">Writing</a></li>
+            {% for href, title in [
+              ['/about/', 'About'],
+            ] %}
+              <li{% if page.is_child_of(href) %} class="active"{% endif %}><a href="{{ href|url }}">{{ title }}</a></li>
+            {% endfor %}
+          </ul>
+        </nav>
+      </div>
+    </header>
+{% endmacro %}

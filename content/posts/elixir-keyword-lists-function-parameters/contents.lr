@@ -1,0 +1,119 @@
+heading: Elixir's keyword lists as option parameters
+---
+body:
+
+This article also offers an intro to the Keyword List type in Elixir; non-beginners can almost certainly skip to the last section.
+
+##An intro to Elixir's Keyword Lists
+
+Keyword lists in Elixir are simply a special case of a list, their contents being made up entirely of 2-item "pair" tuples with the first item of each being an Elixir `:atom`. Unlike maps, they are ordered and may contain multiple values for the same key. Due to their prevalence in the language, a lot of syntactic sugar has been created to make working with them easier and more idiomatic. For example, during creation: 
+
+```elixir
+iex(1)> [{:cats, 2}, {:dogs, 1}] == [cats: 2, dogs: 1]
+true
+```
+
+You can see that the two ways of defining them are one and the same, the one on the right obviously being the syntactically sugared version.
+
+##Passing an optional set of options to a function
+
+Other than creating small k:v stores, this is their primary use case in both Elixir & Erlang. By allowing a client to pass in a keyword list full of options, the function can conditionally change its logic. The keyword list is commonly optional and passed as the last parameter, so common in fact that Elixir has provided more syntactic sugar which allows you to leave off the keyword lists square brackets when it is being passed as the last parameter. For example:
+
+```elixir
+def func_with_options(arg1, opts \\ []) do
+  # ...
+end
+```
+..and the function can be called as follows:
+
+```elixir
+# With no options at all..
+func_with_options("arg1")
+# With options, the non-sugared way.
+func_with_options("arg1", [verbose: true, indent: 4])
+# With options, with syntactic sugar.
+func_with_options("arg1", verbose: true, indent: 4)
+```
+
+Note that in the last instance the function signature is still `func_with_options/2`; despite the keyword list having 2 elements they are contained inside one list, the arity of the function does not change.
+
+And that leads us on to the main point of this article: what if a function accepts only one parameter and it is a keyword list?
+
+##Retrieving the same return for different input
+
+I'm sure there is a much better way of putting that but I do currently know it; this is better showcased by an example. First, let's set the scene:
+
+You have user account functionality in your app and the record for each user contains, amongst others, the fields: `username`, `email` & `ni_number`; the user's username, email address, and National Insurance number respectively - all unique, indexed and all strings. You'd like to create some form of a shortcut to retrieve a user record from your data store using any of the aforementioned fields; as they are all unique to the user, only one is required to get a hit.
+
+In quite a few languages, we suffer a problem here as all 3 lookups are string based, we therefore cannot rely on type to allow our helper function to do different things based on the input. If it was just `username` & `email` perhaps we could do a check to see if the string contains an '@' sign but that would be a flimsy solution at best, and completely falls apart when we also want to allow lookup by `ni_number` which like username, is just an alphanumerical string. Thus, a solution to this that I have often seen in various languages is multiple helper methods:
+
+```python
+# Pseudo-code
+get_user_by_username("harry")
+get_user_by_email("harry@example.com")
+get_user_by_ni_number("JN032185D")
+
+# or even:
+User.get_by_username("harry")
+User.get_by_email("harry@example.com")
+User.get_by_ni_number("JN032185D")
+```
+
+Fine, both ways get the job done but that is about all you can say about them.
+
+In Python, another common pattern is to pass keyword arguments as a form of lookup dictionary:
+
+```python
+def get_user(**lookup):
+  return SomeORM.get(**lookup)
+  
+get_user(username="harry")
+get_user(email="harry@example.com")
+get_user(ni_number="JN032185D")
+```
+
+Which is an improvement but in this instance it tightly couples the logic of your wrapper with that of the ORM or underlying data store, as the client must know the field names or the lookup dict might even have a special format (e.g Django's `fieldname__iexact` lookup filters). This makes the wrapper less useful from an abstraction perspective.
+
+Now, back to Elixir. As we've already said, when the last parameter to a function is a keyword list, you can leave off the square brackets; this also applies when the parameter is also the first and only one. Therefore we can combine multiple function clauses with Elixir's pattern matching to allow:
+
+* the handling code to split up the differing lookups without using conditional logic. Our brains are not perfect at following conditional branches, following linear code is much less bug-prone.
+* our clients to have a nice API, where they simply hint at the type of lookup they wish for.
+
+```python
+defmodule User do
+ 
+  def get(username: username) do
+    # Do lookup with username
+  end
+  
+  def get(email: email) do
+    # Do lookup with email
+  end
+  
+  def get(ni_number: ni_number) do
+    # Do lookup with ni_number
+  end
+
+end
+
+# Which gives us a the following API..
+User.get(username: "harry")
+User.get(email: "harry@example.com")
+User.get(ni_number: "JN032185D")
+```
+
+And that is the power that can be achieved by combining multiple function clauses with pattern matching. As with any powerful thing, it will be likely be abused - so only use this pattern in cases where it completely makes sense: if in doubt, multiple parameters to a function is the normal way to go.
+
+This pattern is in fact already in use in the code powering [hex.pm](http://hex.pm); you can see the code base over at the [hex_web repository on github](https://github.com/hexpm/hex_web/blob/9ba0e119564e56ff0a57a575ba5e9d30f8aaf9e4/lib/hex_web/user.ex#L143).
+---
+pub_date: 2015-03-22
+---
+subtitle: and related sugar
+---
+summary: A quick look into some patterns surrounding Elixir's keyword lists
+---
+header_attrib_name: fr4dd
+---
+header_attrib_url: https://www.flickr.com/photos/fr4dd/9142749652/in/photolist-eVUYWG-aFTNZv-4eaT95-7pX5Nc-8bpmF-gBDKnw-7V6KBb-bUPCcR-ecNsM3-dPu8FJ-8Z3Fvg-9et1wS-BBQpHR-ccbS3E-dRbjcv-jS7YfU-qAJ6u5-4uCf44-4f6kmD-dR8uyN-ehHySN-dMZeqc-DjgiAT-4DKwtX-bCSmSz-bM9J9v-qVRosL-qVhSjF-pZT8cX-e8WSRm-dPW9nq-41tosj-qZo4Bs-pzqF3x-byq4dW-5KxEpw-8niAZ-qxZ8f6-wmxdXe-9mt9NB-933KXY-k3Y4Ed-DgLGLk-6arLhA-dPzpUj-5U9bL5-r1gPnN-f1Pb3e-Ch8GtQ-jGX6vt
+---
+header_image: header.jpg

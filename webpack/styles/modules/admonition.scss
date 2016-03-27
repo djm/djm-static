@@ -1,0 +1,25 @@
+.admonition {
+  margin: 2rem 0;
+  padding: .5rem 0;
+
+  &-note {
+    border-bottom: 2px solid color(note);
+    border-top: 4px solid color(note);
+  }
+
+  &-info {
+    border-bottom: 2px solid color(info);
+    border-top: 4px solid color(info);
+  }
+
+  &-tip {
+    border-bottom: 2px solid color(tip);
+    border-top: 4px solid color(tip);
+  }
+
+  &-warning {
+    border-bottom: 2px solid color(warning);
+    border-top: 4px solid color(warning);
+  }
+
+}

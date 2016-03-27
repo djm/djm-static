@@ -1,0 +1,46 @@
+.container {
+
+  &--xs {
+    @include outer-container($xs-breakpoint);
+    margin-left: 1rem;
+    margin-right: 1rem;
+
+    @include breakpoint-upwards($xs-breakpoint + 45px) {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  &--sm {
+    @include outer-container($sm-breakpoint);
+    margin-left: 1rem;
+    margin-right: 1rem;
+
+    @include breakpoint-upwards($max-width + 45px) {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  &--md {
+    @include outer-container($md-breakpoint);
+    margin-left: 1rem;
+    margin-right: 1rem;
+
+    @include breakpoint-upwards(1166px) {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+
+  &--lg {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    max-width: none;
+
+    @include breakpoint-upwards(1166px) {
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+  }
+}

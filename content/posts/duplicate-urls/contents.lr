@@ -1,0 +1,72 @@
+heading: Duplicate URLs
+---
+body:
+
+I was in two minds about writing this post: 1) because it pertains somewhat to SEO and the unfortunate things that surround that world and 2) because it seems obvious to me, but then again I see quite a few sites making the same easily-exploitable mistake.
+
+##The problem
+
+Take this URL, see the slug "juno-breakbeat-podcast":
+
+```
+http://itunes.apple.com/gb/podcast/juno-breakbeat-podcast/id341049395
+```
+
+Now [visit](http://itunes.apple.com/gb/podcast/juno-breakbeat-podcast/id341049395) it.
+
+Now take this modified one, see the slug:
+
+```
+http://itunes.apple.com/gb/podcast/CRAP-PODCAST/id341049395
+```
+
+Now [visit](http://itunes.apple.com/gb/podcast/CRAP-PODCAST/id341049395) it again.
+
+The second link should either return a HTTP 404 Not Found or a HTTP 301 Redirect to the canonical URL; definitely not a 200 with exactly the same content as the canonical URL.
+
+##Why is this a problem?
+
+Because aside from the fact a user can stick anything they wish in your URL and share it as if it was the canonical URL, it opens up your site to a punitive SEO attack. Google does not like [duplicate content](http://support.google.com/webmasters/bin/answer.py?hl=en&answer=66359), they're pretty clear about this; imagine someone deliberately linking to your *one* page with 10,000 or more different cross-domain indexable links...this will inevitably affect your ranking and could even result in the infamous '[google slap](https://www.google.co.uk/search?sugexp=chrome,mod=0&sourceid=chrome&ie=UTF-8&q=google+slap)'.
+
+You might say 'who in their right mind would do that' and I certainly would have had I not worked in and around certain industries; however, through work and other projects I've had the pleasure to meet and discuss this with some very intelligent people that used to do this for a living: black hat SEO is a bigger industry than most people think. Finding quirks/exploits like this in a site's structure is only one tool on the black hat's belt, you're [welcome](http://www.justinparks.com/golden-bullet-backlinks-kill-website-100-backlinks/) to [read](http://www.blackhatworld.com/) more - it's a dirty world out there.
+
+This is unlikely to affect large sites such as Apple, due to their number of link banks and therefore authority I would be incredibly surprised if an attack such as this had an affect. But your site is unlikely the size of Apple or reddit (also [guilty](http://www.reddit.com/r/motorcycles/comments/v32na/CAN_TYPE_ANYTHING_I_LIKE_SEEEEE/)).
+
+##How to fix it
+
+**Check**. Just check the values you're receiving match the object that you're looking up.
+
+Given the Django framework, if you're doing this in a view:
+
+```python
+def post_detail(request, id, slug):
+    post = get_object_or_404(Post, id=id)
+    ...
+```
+
+Stop it, and do this:
+
+```python
+def post_detail(request, id, slug):
+    post = get_object_or_404(Post, id=id, slug=slug)
+    ...
+```
+or if you're other fields aren't indexed and you don't want them to be, it may be better to do this:
+
+```python
+def post_detail(request, id, slug):
+    post = get_object_or_404(Post, id)
+    if post.slug != slug:
+        raise Http404
+    ...
+```
+
+If you find yourself in a position where for you cannot check these constraints, then to stop abuse you should tell GoogleBot and other crawlers what the actual URL for that page should be. This is done with an element Google invented called the `rel="canonical"` tag and you can [read more about that](http://support.google.com/webmasters/bin/answer.py?hl=en&answer=139394) over at Google.
+---
+pub_date: 2012-04-21
+---
+header_attrib_name: Moyan Brenn
+---
+header_attrib_url: https://www.flickr.com/photos/aigle_dore/6973012997/in/photolist-bCbvQ2-nM2Y41-ZDvM7-uBKLG8-oHiNBv-y3bgec-wtB9oH-foXfN4-w46KGk-nwRJCs-rfVTcd-e5Affg-r6MwMd-q2PkR8-e1HQ86-npnFHS-4KivVf-sgh1R5-viU3bb-oewqwn-o7iDPD-qspvGK-wHADVg-oigaUo-e1HPPZ-zYY3cc-786YPZ-pL3zHM-rxHEkE-r2JhHv-e3Rjib-jaV6aS-dVpTSZ-fbGBB1-BeDcPv-y1dxxu-nSjMbn-g3dNaJ-hLyA2Y-oYR6vr-BfGi2W-o6xm9R-q4NnR9-nqiQdp-oXLHid-vMdBJd-go8AwJ-nENohG-nnHZ4g-o7mNEf
+---
+header_image: header.jpg

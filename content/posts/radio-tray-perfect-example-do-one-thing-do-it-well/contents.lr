@@ -1,0 +1,39 @@
+title: Radio Tray: A perfect example of 'do one thing, do it well'
+---
+pub_date: 2010-11-16
+---
+author: Darian Moody
+---
+body:
+
+The shortened [Unix philosophy](http://en.wikipedia.org/wiki/Unix_philosophy) of "Write programs that do one thing and do it well" by Doug McIlroy is something that is quite often ignored in and out of the Unix software world. There are obviously cases where it definitely cannot apply but for most things I do on Linux these days, I like having a specific tool for a specific job.
+
+## The job: streaming radio
+
+Such a simple task right? Before I found [Radio Tray](http://radiotray.sourceforge.net/) it would always be a rather large hassle using a bigger piece of software such as Rhythmbox or VLC to do what is effectively an incredibly simple task that requires no play controls whatsoever except from '*select*' and '*volume*'. 
+
+>[Radio Tray](http://radiotray.sourceforge.net/) is not a full featured music player, there are plenty of excellent music players already. However, there was a need for a simple application with minimal interface just to listen to online radios. And that's the sole purpose of Radio Tray. - via [Radio Tray @ SourceForge](http://radiotray.sourceforge.net/)
+
+[Radio Tray](http://radiotray.sourceforge.net/) handles the task beautifully while keeping the configuration simple and the interface out of the way. It has no detached windows in common use and is controlled solely from the task tray in Gnome or KDE with a simple left click giving a nicely separated list of your online streaming radio stations, grouped in whatever fashion you please with simple separators or drop-downs. A right click allows configuration of the radio stations (which in itself it simple, only name and URL for each station) and a scroll of the mouse wheel while hovering over the icon will change the volume level.
+
+It's simplicity at it's best and what's more is the notifications you get thanks to the likes of `python-notify` and the fact it seems to handle anything you chuck at it including PLS, M3U, ASX, WAX & WVX as it's based on gstreamer.
+
+##Take your stations anywhere
+
+Another philosophy the program abides by is to "store data in flat text files" - the program stores both it's config file (`config.xml`) and it's bookmarks file (`bookmarks.xml`) in your home folder under `~/.local/share/radiotray/`. This makes it incredibly easy to backup and keep your configuration and list of radio stations portable, either by simply copying them to a USB stick or by keeping the files in some kind of central repository. For those that know how to use `git`, you can find my list of [bookmarks on Github](https://github.com/djm/dotfiles). On setting up a new pc, all I have to do is checkout the repo, and then symlink the location of where it expects the bookmarks file to the one in the checkout (`ln -s /path/to/repo/bookmarks.xml ~/.local/share/radiotray/bookmarks.xml`) and that's it - all my additions and changes to bookmarks will be synced everywhere (with a quick push and pull from the repo).
+
+Oh, and did I mention it's all coded in Python?
+---
+_slug: radio-tray-perfect-example-do-one-thing-do-it-well
+---
+heading: Do one thing and do it well
+---
+subtitle: A perfect example: RadioTray
+---
+summary: Radio Tray: a great example of Unix's application philosophy: "do one thing, do it well". An online radio streamer for Linux (e.g Ubuntu).
+---
+header_image: header.jpg
+---
+header_attrib_name: ais3n
+---
+header_attrib_url: https://www.flickr.com/photos/ais3n/9458661717/in/photolist-fpQ7Ar-dKM34q-ffG1jd-CLCPeD-8VTtEg-8UknfE-8UKsrE-oKVDgP-6Z4HS6-f28zUz-DD41y-eY9M83-dLit7e-eY9Md1-eXXvv4-9A3c4o-9A3bzG-oUhbkK-dcQP2o-8N4Up4-rrF6gq-rSF3L8-rMgfdv-rJG3XF-9UiXD1-2K7peV-w8RdFo-dH5DJa-4ZXXbi-2Ldp9-w8R9VY-7J8n6t-rSdpxb-amYJc5-dXZyWe-9R6Nns-dWpnwo-9UBqkN-8ZbLMW-cfWLeS-98bfPH-bFvLAc-73Wqny-6KT8ed-JH8cX-4uXGNX-phsMJ-72zr5u-5gwQHL-89g8P5

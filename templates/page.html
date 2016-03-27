@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ this.title }}{% endblock %}
+
+{% block header %}
+  {% if this.header_image %}
+    {{ render_header(this, background_url=this.header_image, height=300, index=false) }}
+  {% else %}
+    {{ super() }}
+  {% endif %} 
+{% endblock %}
+
+{% block body %}
+  <section class="page">
+    {% if this.flow %}
+      {% for blk in this.flow.blocks %}
+        {% set container = 'container--sm' if blk._flowblock == 'project' else 'container--xs' %}
+        <div class="container {{ container }} block block-{{ blk._flowblock }}">
+          {{ blk }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    <footer class="container container--xs">
+      <hr>
+      {% if this.header_attrib_name %}
+        <p class="post__attribution">
+          <i>With thanks to {{ this.header_attrib_name }} for the {% if this.header_attrib_url %}<a href="{{ this.header_attrib_url }}" target="_blank">header image</a>{% else %}header image{% endif %}.</i>
+        </p>
+      {% endif %}
+    </footer>
+  </section>
+{% endblock %}

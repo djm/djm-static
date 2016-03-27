@@ -1,0 +1,42 @@
+title: Enhance pdb debugging with ipdb and IPython
+---
+_slug: enhance-pdb-debugging-ipdb-ipython
+---
+body:
+
+[pdb](http://docs.python.org/library/pdb.html) is Python's brilliant interactive source code debugger which allows you set a point to "jump into" your code and use the standard shell for introspection and navigating up and down your code. [IPython](http://ipython.scipy.org/moin/FrontPage) is a 3rd-party package (part of SciPy) that adds serious enhancements to Python's interactive shell. 
+
+A great tip I learnt about a year ago is that the two can be brought together to make debugging even easier than it already was. ipdb brings all of IPythons greatness including tab completion, syntax highlighting, better tracebacks, better introspection and more to the standard pdb debugger so that when you set your break point, instead of getting the standard Python shell, you receive the IPython one and then effectively carry on as usual. and it's a cinch to install.
+
+##Installation and use of ipdb
+
+Prerequisites: the [ipython package](http://pypi.python.org/pypi/ipython/) is required; all methods listed below will install this for you if the requirement is not found.
+
+[ipdb is available in the cheeseshop](http://pypi.python.org/pypi/ipdb) and as such is a standard Python package that can be downloaded and installed with `python setup.py install`. Or, take the quicker route and install with either `easy_install` or `pip` (recommended) with one of the following commands:
+
+```bash
+    easy_install ipdb
+    pip install ipdb
+```
+
+Then in your code, instead of importing pdb you simply import and use ipdb instead as follows:
+
+```python
+    import ipdb; ipdb.set_trace()
+```
+
+This comes in particular handy when using Django's runserver command as the process will "halt" (until you quit out of IPython with `Ctrl + D`, or 'carry on' with `continue`) allowing you to use IPython's advanced tab completion, history, tracebacks and syntax highlighting for better object introspection and for jumping forward or backward through code, among other things (see [IPython's documentation](http://ipython.scipy.org/moin/Documentation).)
+---
+heading: Enhancing Python Breakpoint Debugging
+---
+pub_date: 2010-12-01
+---
+subtitle: with iPython and ipdb
+---
+summary: Using ipdb to bring together the pdb debugger and the IPython (interactive) shell.
+---
+header_attrib_name: Gordon Ednie
+---
+header_attrib_url: https://www.flickr.com/photos/gordon2208/7592738790/in/photolist-cyWLHu-kFq1x-BciP6d-CTMdo2-4eZEko-fNzRfx-vWc9M3-r66vbS-r8oN1M-y2AEK-bzPmzT-6dtjMt-2dWo5m-8Exqi-2dWnxJ-PN5Bj-2dWm21-xMC4ww-w3gzq-iU1GKy-cDwBE9-8WbdML-arC1Zc-927Yj-jAxwmW-9WTmn4-7yqTAS-owQq5n-Bhe2hk-77xvx9-mHzsd-qkKS2-bjYEXE-dRXwwM-6rzaq-vaxEt-hfG25t-CJPKGZ-5PRtGs-8WbnU3-ebpWzw-shZR8H-iYjNi-BP6Ths-r8rTU9-NWe1M-63ouQ2-ek2yUc-2vqaDs-g1n2Jc
+---
+header_image: heading.jpg

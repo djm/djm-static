@@ -1,0 +1,49 @@
+{% set num_slides = 3 %}
+{% set slide_secs = 4 %}
+{% set xfade_secs = 1 %}
+
+{% set total_secs = (slide_secs + xfade_secs) * num_slides %}
+{% set delay_secs = slide_secs + xfade_secs %}
+
+<style type="text/css">
+    @keyframes slide-fade {
+      0%{
+        opacity: 1;
+      }
+      {{ (slide_secs / total_secs) * 100 }}% {
+        opacity: 1;
+      }
+      {{ ((slide_secs + xfade_secs) / total_secs) * 100 }}% {
+        opacity: 0;
+      }
+      {{ 100 - ((xfade_secs / total_secs) * 100) }}% {
+        opacity: 0;
+      }
+      100%{
+        opacity: 1;
+      }
+    }
+</style>
+
+<div class="project project--{{ this.class }}">
+  <div class="project__header">
+    <div class="project__title-spacer"></div>
+    <h4 class="project__title">{{ this.title }}</h4>
+    <h5 class="project__year">{{ this.year }}</h5>
+  </div>
+  <div class="project__body">
+    <div class="project__body-image">
+      <a href="{{ this.url }}">
+        {% for image_id in this.images|reverse %}
+          {% set image = record.attachments.images.get(image_id) %}
+          {% if image %}
+            <img class="project__image" {% if record.lazy_load_images %}data-normal{% else %}src{% endif %}="{{ image.thumbnail(800)|url }}" alt="{{ this.title }}" style="{% if num_slides > 1 %}animation: slide-fade {{ total_secs }}s infinite; animation-delay: {{ delay_secs * loop.revindex0 }}s;{% else %}opacity: 1;{% endif %}">
+          {% endif %}
+        {% endfor %}
+      </a>
+    </div>
+    <div class="project__body-text">
+      {{ this.text }}
+    </div>
+  </div>
+</div>

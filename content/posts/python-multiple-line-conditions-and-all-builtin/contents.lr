@@ -1,0 +1,45 @@
+heading: On Python's multiple conditionals
+---
+body:
+
+This post references the 'problem' caused by multiple conditional statements in Python code; it's a frequent question on Stack Overflow with many questions on the topic. e.g "What's the best way to format multiple if conditions in Python?"
+
+This is a simple example of the issue:
+
+```python
+if test == 'wrong' and test2 == 'test2' and test3 == 'test3' and test4 == 'test4':
+    # Do something.
+```
+
+Long lines that not only go against PEP8's 80 char rule but are generally hard to read and messy to play with.
+
+This post is actually about one solution to this which I frequently see being suggested ***with no caveats***. and that's the only problem really: it has a pretty big caveat. The solutions in question uses the all() built-in (around since Python 2.5) to take in an iterable of pre-defined conditions; the all built-in then loops through each item and will return `False` as soon as one of the items evaluates to `False`. Sounds great right? Let's see it in action:
+
+```python
+rules = [test == 'wrong',
+         test == 'test2',
+         test == 'test3',
+         test == 'test4']:
+if all(rules):
+    # Do something.
+```
+
+##Short-circuit evaluation
+
+You'd be forgiven for thinking the first and second examples here give the same result: mostly because they do. It's how they go about it which differs. The first will test `test == 'wrong' ` and return `False`, it will never evaluate the other conditionals after the `and`. This is called [short-circuit evaluation](http://en.wikipedia.org/wiki/Short-circuit_evaluation) and is common in many programming languages as a form of optimisation and as a control structure.
+
+You probably see where I'm going with this now: the second example will evaluate **all** the conditionals on instantiation of the list and *then* loop through them checking for that boolean status. For the example the speed difference is minuscule and can almost be ignored; however, if your conditions were a bit more resource heavy this could quickly become a problem; it also becomes an issue in cases where a conditional should be required before checking another one - usually this is simply sorted by ordering but as all the conditionals are run with this method, that does not work.
+
+The same obviously applies to replacing `or` statements with the `any()` built-in in a similar fashion. I hesitated in putting 'gotcha' in the title because I don't think it really classes as such as it's fairly easy to understand why it acts this way - it's just good to point out to anyone new to this pattern.
+---
+pub_date: 2012-03-12
+---
+subtitle: and the problems caused by short circuit evaluation
+---
+summary: Be careful with the all() and any() patterns for replacing multiple if conditionals.
+---
+header_attrib_name: Tiws
+---
+header_attrib_url: https://www.flickr.com/photos/tiws/6387782061/in/photolist-aJt44t-dzpkWB-aucqcN-9Uixeh-fpNsft-8WqcjS-mv3tcx-tr6KBi-8YeaCn-eju728-b8zLTB-qQxfwY-qDC25e-auE2BP-czAsY1-orqz4V-nRmARY-bbpZZM-oEzQCn-b9JJH2-tyQBXQ-kJKvEz-858eQP-9a1pk3-b5TXxt-9Tab6a-dxdEKF-8Wn6sP-9oddeb-dcF1Ef-pp3Nay-rnE3du-9odcpG-9AFsmE-oq3ddn-apRacM-cSbeUQ-9siFvs-dfsWpi-9Qdnyb-9WCr95-9uC9bX-eUicUU-9x72HJ-cmA6UQ-pGwPvg-dhRdSf-bKVA86-aq1Wyi-oK9eFm
+---
+header_image: header.jpg

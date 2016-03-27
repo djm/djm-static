@@ -1,0 +1,74 @@
+html {
+  @include sans-serif;
+  font-size: 18px;
+  line-height: 1.8;
+
+  @include breakpoint-upwards($xs-breakpoint) {
+    font-size: 20px;
+    line-height: 1.8;
+  }
+}
+
+body {
+  -moz-font-feature-settings: "liga" on;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+ul {
+  @include serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+
+  li {
+    margin: 0;
+  }
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @include sans-serif;
+  font-weight: normal;
+}
+
+code,
+pre {
+  @include monospace;
+  font-size: .9rem;
+}
+
+p {
+  @include serif;
+  margin: 1rem 0;
+}
+
+::selection {
+  background: color(text-selection);
+}
+
+a:link,
+a:visited {
+  color: color(highlight);
+  transition: color .1s ease-in;
+}
+
+a:hover,
+a:active,
+a:focus {
+  color: color(highlight-active);
+}
+
+hr {
+  background-color: color(highlight);
+  border: 0;
+  height: 2px;
+  margin: 2rem auto;
+  width: 50%;
+}

@@ -1,0 +1,81 @@
+heading: Cryptographic hash functions in Elixir
+---
+body:
+
+First off, the `md5` and `sha1` cryptographic hash functions should only be used when security is not a requirement or when compatibility with legacy applications is needed. `md5` was physically broken a very long time ago, and `sha1` was theoretically broken back in 2005. When you need a hash for secure purposes, use a hash from the `sha2` set (at least until `sha3` starts appearing in libraries).
+
+##Versioning
+
+This post applies to:
+
+* Elixir: v1.0.3
+* Erlang: OTP 17
+
+##Dropping down into Erlang
+
+Now that is out of the way, the title is rather incorrect! To get access to these functions in Elixir we need to drop down into Erlang - however, that is incredibly easy. Most Erlang modules can be accessed from Elixir by simply using a colon in front of their lowercase module name. In this instance, we want `:crypto`.
+
+Where `:sha256` is used below, it can be swapped out for the following hash algorithms:
+
+* `:md5`
+* `:ripemd160`
+* `:sha` (SHA-1)
+*  `:sha224` (SHA-2)
+*  `:sha256` (SHA-2)
+*  `:sha384` (SHA-2)
+*  `:sha512` (SHA-2)
+
+For more information, please see the [Erlang Crypto module documentation](http://www.erlang.org/doc/man/crypto.html). 
+
+## Non-streaming hashing
+
+Erlang offers up the `crypto.hash/2` function for hashing when you have all the values you want to hash ready to go. In the following examples, we are calculating the `sha256` hash of the binary string `"whatever"`.
+
+To get the binary hash:
+
+```elixir
+iex(1)> :crypto.hash(:sha, "whatever")
+```
+
+And to get the hex digest from that:
+
+```elixir
+iex(1)> :crypto.hash(:sha256, "whatever") |> Base.encode16
+```
+
+If you want it in lowercase, carry on the piping to `String.downcase`.
+
+And finally, to show an example of hashing multiple things in a list:
+
+```elixir
+iex(1)> :crypto.hash(:sha256, [3, "things", "!"]) |> Base.encode16
+```
+
+## Streaming hashing
+
+Erlang also allows us to build up a hash from multiple items when perhaps all the items are not available to you yet using the functions: `crypto.hash_init/1`, `crypto.hash_update/2` & `crypto.hash_final/1`
+
+The following it how you use the functions together procedurally (and is for example only, this is not proper Elixir form by any means):
+
+```elixir
+sha = :crypto.hash_init(:sha256)
+sha = :crypto.hash_update(sha, 2)
+sha = :crypto.hash_update(sha, "things")
+sha_binary = :crypto.hash_final(sha)
+sha_hex = sha_binary |> Base.encode16 |> String.downcase
+```
+Here, we create a hash "context" using `crypto.hash_init/1`, and then pass that context into subsequent `crypto.hash_update/2` calls along with the extra value to add to the hash. When we have finished adding all the items we want hashed, we simply run `crypto.hash_final/1` with our created hash context to receive the hash binary, which can then easily be converted into a hex digest as shown.
+
+One final thing: **please don't use these for storing passwords**, hashing algorithms are too fast, what you want is a *key derivation function* as they are more suitable for preventing brute forcing attacks - use extensive rounds of bcrypt or PBKDF2 instead.
+---
+pub_date: 2015-02-23
+---
+subtitle: Generating hex digests
+---
+summary: How to use Erlangs cryptographic hash functions from Elixir.
+---
+header_attrib_name: Mike_tn
+---
+header_attrib_url: https://www.flickr.com/photos/beginasyouare/8019941382/in/photolist-ddGiaq-4CXebN-huN3P-5m6X8C-7JRphj-7dLMVH-agfAoG-q2FvnT-f78Uk-BEy35o-4SqKQS-huMZK-9ENRbN-w7c9nC-852Fxi-9LVLHk-79AHcC-9W8x73-9gYQo7-5oYUit-6bcFTy-6dzpWR-5nGLmZ-8BsS2-9fMeWQ-64T2rG-CSXq1-hQd7eQ-cteBPf-4qJc-947iqX-CqF6yV-49PY2p-9LVMeX-dYX7cg-bnGw9d-bAXVaF-7gdcEb-dDRMk3-x64kfj-cjaqe7-8kvDZ1-2Txk6j-23xrjv-LKbfh-WXfS-dUMtaZ-8fsDmE-k4SFpX-7ezjHG
+---
+header_image: header.jpg

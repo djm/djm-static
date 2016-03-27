@@ -1,0 +1,73 @@
+@mixin breakpoint-upwards($breakpoint) {
+  @media only screen and (min-width: $breakpoint) {
+    @content
+  }
+}
+
+@mixin clearfix {
+  zoom: 1;
+
+  &::before,
+  &::after {
+    content: '';
+    display: table;
+  }
+
+  &::after {
+    clear: both;
+  }
+}
+
+@mixin serif {
+  font-family: "ff-meta-serif-web-pro", Georgia, serif;
+}
+
+@mixin sans-serif {
+  font-family: "effra", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+@mixin monospace {
+  font-family: "source-code-pro", monospace;
+}
+
+@mixin text-shadow-to-crop-underline($color) {
+  text-shadow: .03em 0 $color, -.03em 0 $color, 0 .03em $color, 0 -.03em $color, .06em 0 $color, -.06em 0 $color, .09em 0 $color, -.09em 0 $color, .12em 0 $color, -.12em 0 $color, .15em 0 $color, -.15em 0 $color;
+}
+
+@mixin fancy-underlines($color, $background-color, $selection-color) {
+  @include text-shadow-to-crop-underline($background-color);
+  color: $color;
+  text-decoration: none;
+  background-image: linear-gradient($background-color, $background-color), linear-gradient($background-color, $background-color), linear-gradient($color, $color);
+  background-size: .05em 1px, .05em 1px, 1px 1px;
+  background-repeat: no-repeat, no-repeat, repeat-x;
+  background-position: 0% 90%, 100% 90%, 0% 90%;
+
+  &::selection {
+    @include text-shadow-to-crop-underline($selection-color);
+    background: $selection-color;
+  }
+
+  &::before,
+  &::after,
+  *,
+  *::before,
+  *::after {
+    text-shadow: none;
+  }
+
+  &:visited {
+    color: $color;
+  }
+}
+
+@mixin hide-text {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}

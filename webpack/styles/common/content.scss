@@ -1,0 +1,88 @@
+@mixin content {
+
+  p a:link,
+  p a:visited {
+    @include fancy-underlines(color(highlight), color(background), color(text-selection));
+  }
+
+  p a:hover,
+  p a:active,
+  p a:focus {
+    @include fancy-underlines(color(highlight-active), color(background), color(text-selection));
+  }
+
+  h2,
+  h3,
+  h4 {
+    color: color(highlight);
+    font-weight: bold;
+    margin: 3rem 0 0 0;
+  }
+
+  ul {
+    margin: 1rem 0 1rem 2rem;
+  }
+
+  li {
+    margin: 0 0 1rem 0;
+  }
+
+  p {
+    word-break: normal;
+    word-wrap: break-word;
+  }
+
+  p code {
+    color: color(dark-grey);
+    font-size: .9rem;
+    white-space: pre-line;
+  }
+
+  hr {
+    background-color: color(highlight);
+    border: 0;
+    height: 2px;
+    margin: 2rem auto;
+    width: 50%;
+  }
+
+  blockquote {
+    border-left: 3px solid color(highlight);
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: -.003em;
+    margin: 2rem 0 2rem -1rem;
+    padding-left: 1rem;
+    text-indent: 3rem;
+  }
+
+  p img,
+  .image {
+    margin: 1rem 0 1rem -5%;
+    width: 110%;
+  }
+
+  // Pygments' Syntax Highlighting
+  .highlight {
+    background: rgba(0, 0, 0, .03);
+    border-left: 3px solid color(highlight);
+    margin: 2rem -1rem;
+    padding: .05rem 1rem;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      margin: 2rem 0 2rem -1rem;
+    }
+
+    pre {
+      font-size: .8rem;
+      letter-spacing: -1px;
+      line-height: 1.6;
+
+      @include breakpoint-upwards($xs-breakpoint) {
+        font-size: .85rem;
+        letter-spacing: normal;
+      }
+    }
+  }
+}

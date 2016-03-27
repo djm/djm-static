@@ -1,0 +1,157 @@
+heading: Django Auth with an LDAP Active Directory
+---
+body:
+
+This is another one of those *"I'm putting this here in case I ever have to do it again"* posts because I really hope I never have to. The aim of this post is to get [django_auth_ldap](http://packages.python.org/django-auth-ldap/) and therefore the [python-ldap](http://www.python-ldap.org/) library working via LDAPS (LDAP over SSL) to port 636. A few internal things we're building at [theTeam](http://theteam.co.uk/) involve interfacing with the group's Active Directory installation to provide such features as single sign-on and auto-filling out of profiles based on data stored with AD.
+
+As with any authentication system, passwords should not be sent unencrypted (especially as plain text as LDAP does normally); thus explaining the decision to do this over an encrypted SSL tunnel. This guide will give a few hints as to how we got *the actual SSL connection* working on an Ubuntu 10.04 LTS server; we assume you have already installed the necessary requirements.
+
+##First off, get your PEMs
+
+These are your root certificates, the ones you must "trust" to have a valid SSL encrypted connection. I would love to help more on how to get these from your Active Directory setup but I was simply provided them by the IT department so I'm no help there I'm afraid.
+
+However, as we're on Ubuntu and using OpenSSL the certificates will work best in PEM format. If you have your CA cert in a different format (such as DER, PKCS#7/P7B or PKCS#12/PFX) then you will need to convert them to PEM to follow this guide. This can be done with CLI tools or just a [simple website](https://confirm.globessl.com/convert.html).
+
+Your key will end up as a raw text file that starts with the line `-----BEGIN CERTIFICATE-----
+`, followed by your alpha-numerical key and ends with the line `-----END CERTIFICATE-----`. If this is not the case, something has gone wrong.
+
+##Trusting the certificate
+
+First of all we need to tell your LDAP installation where to look for trusted CA certificates. To do this, you need to edit the global ldap.conf and set the `TLS_CACERT` variable. We'll be using nano for it's simplicity here, but you can use whatever you like:
+
+```bash
+$ sudo nano /etc/ldap/ldap.conf
+# Add the following line, or edit the current TLS_CACERT entry.
+TLS_CACERT /etc/ssl/certs/ca-certificates.crt
+```
+
+Now that we have it looking for CA certificates we need to add our root cert to that pile. You will need to edit the `ca-certificates.crt` file and append your key you found earlier to it. That includes *everything* - the beginning and end lines are absolutely key to this working. Paste it at the bottom of this file:
+
+```bash
+sudo nano /etc/ssl/certs/ca-certificates.crt 
+```
+##Testing the connection on the cmd line
+
+If you don't have `ldapsearch` on your cmd line already then you will need to install the `ldap-utils` package:
+
+```bash
+sudo apt-get install ldap-utils
+```
+
+This binary allows us to test our LDAPS connection without delving into python-ldap (although to be honest, you may prefer to do that straight away).
+
+```bash
+ldapsearch -H ldaps://ldap-x.companygroup.local:636 -D "CN=Something LDAP,OU=Random Group,DC=companygroup,DC=local" -w "p4ssw0rd" -v -d 1
+```
+For more information than I'm about to give, check the [ldapsearch man page](http://linux.die.net/man/1/ldapsearch). 
+
+* -H is the full URI to the LDAP server, in our case here using `ldaps://` and port 636 (default for ldaps). 
+* -D is the 'distinguised name' that you need to start the first auth bind (binddn).
+* -w is the password for the binddn. Use single qoutes if you have any exclamation marks or other bash key characters.
+* -v is for verbose mode and -d 1 set the debug level low; both so we know more about what's happening.
+
+Hit enter, and all things going well you should have a valid encrypted connection to the LDAP server. You'll see something like below if it went OK. If not, read on:
+
+```
+# numResponses: 1
+ldap_free_connection 1 1
+ldap_send_unbind
+ber_flush2: 7 bytes to sd 3
+ldap_free_connection: actually freed
+```
+
+##Troubleshooting the connection
+
+```
+ldap_bind: Invalid credentials (49)
+additional info: 80090308: LdapErr: DSID-0C0903AA, comment: AcceptSecurityContext error, data 52e, v1772
+```
+
+If you're seeing the above, semi-congrats because at least you've connected fine. You have however failed the first bind authentication and will therefore need to check your 'Distinguished Name' (DN) and bind password (-D & -w flags).
+
+```
+ldap_connect_to_host: Trying x.x.x.x:636
+ldap_pvt_connect: fd: 3 tm: -1 async: 0
+TLS: hostname (ldap-x) does not match common name in certificate (ldap-x.companygroup.local).
+ldap_err2string
+ldap_sasl_bind(SIMPLE): Can't contact LDAP server (-1)
+additional info: TLS: hostname does not match CN in peer certificate
+```
+
+If you're getting the above error, the hostname you are using for your connection does not match the common name in the certificate. It should tell you what it should it match and so this is simply a case of editing your /etc/hosts file to point to the right location with that hostname. For example:
+
+```bash
+127.0.0.1       localhost
+x.x.x.x         ldap-x.companygroup.local # Where x.x.x.x is the server IP.
+```
+
+##Applying this all to django-auth-ldap
+
+So we've got this far, this is how you convert that to working with [django-auth-ldap](http://packages.python.org/django-auth-ldap/) setup. The best way to show this is to simple show the relevant settings file for the project; again, we assume you already have django-auth-ldap setup in your Django project (hint: docs).
+
+```python
+# For this, you want to be using the -H flag setting you used above.
+AUTH_LDAP_SERVER_URI = "ldaps://ldap-x.companygroup.local:636"
+# This is the distinguished name (DN), the -D flag above.
+AUTH_LDAP_BIND_DN = 'Something LDAP,OU=Random Group,DC=companygroup,DC=local'
+# The bing password, the -w flag above.
+AUTH_LDAP_BIND_PASSWORD = 'p4ssw0rd'
+
+# We do lookups on a user by email so this may not work for you
+# but you should get the idea. 
+AUTH_LDAP_USER_SEARCH = LDAPSearch("DC=companygroup,DC=local",
+        ldap.SCOPE_SUBTREE, "(&(objectClass=user)(mail=%(user)s))")
+
+# The following OPT_REFERRALS option is CRUCIAL for getting this 
+# working with MS Active Directory it seems, unfortunately I have
+# no idea why; it just hangs if you don't set it to 0 for us.
+AUTH_LDAP_CONNECTION_OPTIONS = {
+        ldap.OPT_DEBUG_LEVEL: 0,
+        ldap.OPT_REFERRALS: 0,
+}
+```
+
+And there you have it, if all went well you should now have a fully working LDAPS Django Authentication Backend.
+
+If you're having issues with `django-auth-ldap`, you'll want to plug into it's logging abilities so that you can debug the connection properly. If you're running Django 1.3 this is a piece of cake with the new `dictConfig` logging stuff in `settings.py`. Basically just copy this into your `settings.py` and you'll retain the default Django loggers + the new `django_auth_ldap` one.
+
+```python
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'stream_to_console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django_auth_ldap': {
+            'handlers': ['stream_to_console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}
+```
+---
+pub_date: 2011-07-28
+---
+subtitle: Using django-auth-ldap over LDAPS (SSL)
+---
+summary: Setting up django-auth-ldap/python-ldap to work with LDAPS and Active Directory
+---
+header_attrib_name: CWCS Managed Hosting
+---
+header_attrib_url: http://www.cwcs.co.uk
+---
+header_image: header.jpg

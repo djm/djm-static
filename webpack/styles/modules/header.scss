@@ -1,0 +1,100 @@
+.header {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  margin-bottom: 2.5rem;
+}
+
+.leader {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  min-height: 100%;
+  text-align: center;
+
+  @include breakpoint-upwards($xs-breakpoint) {
+    align-items: flex-end;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  &__title {
+    background: url('/static/images/logo_black.svg') no-repeat;
+    background-size: contain;
+    display: block;
+    height: 3.6rem;
+    margin: auto 0;
+    width: 12rem;
+
+    @include breakpoint-upwards($xs-breakpoint) {
+      margin: 0 auto -24px -8px;
+      transition: margin-bottom .1s ease-in;
+
+      &:hover {
+        margin-bottom: -18px;
+      }
+    }
+
+
+    a:link,
+    a:visited {
+      display: block;
+      min-height: 100%;
+      min-width: 100%;
+    }
+
+    h1,
+    h2,
+    h4,
+    h5 {
+      @include hide-text;
+    }
+  }
+}
+
+.navigation {
+  font-size: .8rem;
+  font-weight: bold;
+  margin-bottom: -1px;
+  margin-right: -4px;
+  text-align: center;
+  text-transform: uppercase;
+
+  ul {
+    @include sans-serif;
+    margin: 0;
+  }
+
+  li {
+    display: inline;
+    margin: 0 0 0 2px;
+
+    &.active a:link,
+    &.active a:visited {
+      border-top: 4px solid color(highlight);
+    }
+
+    &.active a:hover,
+    &.active a:active,
+    &.active a:focus {
+      border-top: 4px solid color(highlight-active);
+    }
+  }
+
+  a:link,
+  a:visited {
+    background: color(white);
+    color: color(black);
+    padding: .2rem .4rem;
+    text-decoration: none;
+    transition: padding .1s ease-in;
+  }
+
+  a:hover,
+  a:focus,
+  a:active {
+    border-top: 4px solid color(highlight-active);
+    padding: .4rem;
+  }
+}

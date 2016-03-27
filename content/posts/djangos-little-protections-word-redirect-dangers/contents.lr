@@ -1,0 +1,112 @@
+heading: On redirect dangers
+---
+body:
+
+I think it goes without argument that [Django](http://www.djangoproject.com) does every little bit it can to prevent you from inserting security holes into your application; that may in the form of auto-escaping all template variables by default, sanitising all database input or the CSRF protection that came with v1.2. Under the hood however it does many other checks to prevent things you perhaps had no idea about and today I'll be covering just one of those, so that you can also implement the feature safely in any code you have to write yourself.
+
+##The problem: trusting client data for use in redirects
+
+A common use case for doing redirects in the view is after a successful POST form submission (to reduce the chance of resubmitting POST data among other things). When you mix this with the need to redirect to "somewhere" afterwards you often will get the case where you're either taking in a the "somewhere" variable in via either a GET or POST dictionary and this is where the problem arises as this data is sent from the client and can therefore be edited client-side or via interception (man-in-the-middle).
+
+How does this affect redirects? Imagine the scenario where you provide a link to a form page with a `next` GET variable. e.g `http://www.example.com/submit/?next=/success/`. This variable is then added as the value of a hidden input on rendering the template for the form page; this then gets POST'd to the server on submission of the form. You then redirect to the given URL and break the number one web commandment: *never* trust external data. 
+
+The problem here is that anyone can simply redirect an oblivious user to any URL by simply changing the `next` get variable when they use the link to the form submission page. e.g `http://www.example.com/submit/?next=http://www.google.com` will redirect to Google on successful submission which, while harmless in this case, can be used for very effective spoofing/fishing attacks.
+
+Imagine doing this on a login form; an unscrupulous user could clone the look of your login page, host it somewhere and then hand out URLs such as `http://www.example.com/login/?next=http://www.somewhere-nasty.com/login/`. On initial look, the URL looks perfectly friendly, but if you're view code is set up to redirect on success without checking the variable, the user will get redirected to the cloned page which could host a message such as "incorrect user/pass" causing the user to re-enter their credentials on a foreign site.
+
+This is a very good trick for people wishing to take advantage of it as the media and net on general has been quite tight on telling people to always check the URL they are visiting, and it has become a very ingrained part of the user experience that if the URL is correct, the site is safe.
+
+##The solution: sanitising the redirect variable
+
+Those of you familiar with Django's `contrib.auth` module will recognise the use case as Django's default login view provides the ability to redirect based on a incoming variable. Django however takes a precautionary step again the above problem so that you don't have to and the code is pasted below so we can see how with a couple of lines you can prevent yourself from the same kind of flaw if building something yourself.
+
+```python
+# Heavier security check -- redirects to http://example.com should
+# not be allowed, but things like /view/?param=http://example.com
+# should be allowed. This regex checks if there is a '//' *before* a
+# question mark.
+elif '//' in redirect_to and re.match(r'[^\?]*//', redirect_to):
+    redirect_to = settings.LOGIN_REDIRECT_URL
+```
+* via [djangoproject.com](http://code.djangoproject.com/browser/django/tags/releases/1.2.3/django/contrib/auth/views.py#L37)
+
+You can read the comments which pretty much explains what I'm about to say but this line effectively checks that the URL does not contain a `//` (as in http:**//**) and if it does, it uses the default `LOGIN_REDIRECT_URL` provided in the settings file. If it doesn't, it does another check to make sure the `//` occurs after the query string denoter `?` before letting it through. If you were being lazy you could just check the variable starts with a` /` but as the comment says this would rule out cases where you want to redirect to a URL that has another URL as part of its query string (this may actually be desired, up to you).
+
+Anyway, that's it - I'll try and write about more of Django's lesser known security features sometime soon.
+
+##Update 6th March 2011
+
+Django trunk's way of handling this has changed and so I thought I'd quickly update this post to showcase the new better way. It basically now uses the urlparse module to check the hostname of the redirect is the same as that of the current request (as opposed to the regex based check above).
+
+For ease, the code is pasted here:
+
+```python
+netloc = urlparse.urlparse(redirect_to)[1]
+# Use default setting if redirect_to is empty
+if not redirect_to:
+    redirect_to = settings.LOGIN_REDIRECT_URL
+    # Security check -- don't allow redirection to a different
+    # host.
+elif netloc and netloc != request.get_host():
+    redirect_to = settings.LOGIN_REDIRECT_URL	
+```
+* via [djangoproject.com](http://code.djangoproject.com/browser/django/trunk/django/contrib/auth/views.py#L37)
+
+##Update 26th June 2013
+
+I thought I'd update as this article still attracts hits. Django has made it even easier to handle this as a patch landed on Dec 10, 2012 that extracted the checking code out into it's own method in `django.utils.http` called is_safe_url. This landed in v1.3 so it's available in that and 1.4 & 1.5. You can see it below for ease, follow the link to view it on Github.
+
+```python
+def is_safe_url(url, host=None):
+    """
+    Return ``True`` if the url is a safe redirection (i.e. 
+    it doesn't point to a different host).
+
+    Always returns ``False`` on an empty url.
+    """
+    if not url:
+        return False
+    netloc = urllib_parse.urlparse(url)[1]
+    return not netloc or netloc == host
+```
+* via [github.com/django/django](https://github.com/django/django/blob/d1b7bd030b1db111e1a3505b1fc029ab964382cc/django/utils/http.py#L231)
+
+##Update 18th August 2013
+
+This particular method has attracted attention recently due to latest [Django security advisory](https://www.djangoproject.com/weblog/2013/aug/13/security-releases-issued/) which caused the release of Django 1.4.6, 1.5.2 & 1.6 beta2 to fix the issue. The vulnerability found was related to an XSS flaw in utilising the ``is_safe_url`` method to guarantee a safe redirect.
+
+>The is_safe_url() function works as intended for HTTP and HTTPS URLs, but due to the manner in which it parses the URL, will permit redirects to other schemes, such as javascript:. While the Django project is unaware of any demonstrated ability to perform cross-site scripting attacks via this mechanism, the potential for such is sufficient to trigger a security response.
+
+>To remedy this issue, the is_safe_url() function has been modified to properly recognize and reject URLs which specify a scheme other than HTTP or HTTPS.
+
+* via [djangoproject.com](https://www.djangoproject.com/weblog/2013/aug/13/security-releases-issued/)
+
+For your perusal, the updated code is included:
+
+```python
+def is_safe_url(url, host=None):
+    """
+    Return ``True`` if the url is a safe redirection (i.e. it doesn't point to
+    a different host and uses a safe scheme).
+
+    Always returns ``False`` on an empty url.
+    """
+    if not url:
+        return False
+    url_info = urllib_parse.urlparse(url)
+    return (not url_info.netloc or url_info.netloc == host) and \
+        (not url_info.scheme or url_info.scheme in ['http', 'https'])
+```
+* via [github.com/django/django](https://github.com/django/django/blob/d1b7bd030b1db111e1a3505b1fc029ab964382cc/django/utils/http.py#L231)
+---
+pub_date: 2010-12-09
+---
+subtitle: & how to avoid common pitfalls with help from Django
+---
+summary: Redirect's need to be sanitised to protect against phishing and other attacks. This post uses Django to showcase how to protect yourself.
+---
+header_attrib_name: Lwp Kommunikáció
+---
+header_attrib_url: https://www.flickr.com/photos/lwpkommunikacio/14664054527/in/photolist-okP7wk-4DuHgU-pFTWAg-64cPxX-6Dd43-BfffUU-bDY74c-qzK8w-e2ArxC-6oN5Qj-9cpBQg-a4ebqH-5nWSTr-KQLCu-5jfnMe-8zHYhc-fowp3W-3K39pd-dmuHhm-meDhe-8zHYHe-zuL9tf-bwofnK-4Qf5G1-4QnUDV-sbZnbB-8hJAso-41fskx-heZvny-6oMUu3-4Qs6b9-4QnTp6-5dcKLk-fwm1i-hb5s8i-nSf39V-iVcqSU-5pxbaP-4HSqeH-rag2dK-cbhZ9b-yFcuHE-36kTcM-dT499C-kKZqAp-6HUpYy-r3Maz9-chDJN7-ddfWjH-ad9LQP
+---
+header_image: header.jpg

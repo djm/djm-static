@@ -1,0 +1,11 @@
+.page {
+  @include content;
+
+  h2:first-of-type {
+    margin-top: 0;
+  }
+
+  footer {
+    text-align: center;
+  }
+}

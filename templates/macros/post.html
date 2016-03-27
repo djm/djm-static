@@ -1,0 +1,80 @@
+{% from "macros/twitter_button.html" import render_twitter_button %}
+
+{% macro render_post(post) %}
+<article class="post">
+  <header class="container container--md post__header">
+    <h1 class="post__heading">
+      <a href="{{ post|url }}">{{ post.heading }}</a>
+    </h1>
+    <h2 class="post__subtitle">
+      {{ post.subtitle }}
+    </h2>
+    <time class="post__date" datetime="{{ post.pub_date }}">
+      <a href="{{ post|url }}">{{ post.pub_date.strftime('%d %B, %Y') }}</a>
+    </time>
+  </header>
+
+  <section class="container container--xs">
+    <div class="post__attributes">
+      <div class="post__author">
+        <a class="post__avatar" style="background-image: url(/static/images/avatar.jpg)" href="https://twitter.com/djm_"></a>
+        <div class="post__author-box">
+          <h4 class="post__author-name">
+            <a href="https://twitter.com/djm_" target="_blank">Darian Moody</a>
+          </h4>
+          <h5 class="post__author-twitter">
+            <a href="https://twitter.com/djm_" target="_blank">@djm_</a>
+          </h5>
+        </div>
+        <div class="post__meta-box">
+        </div>
+      </div>
+    </div>
+
+    <div class="post__body">
+
+      {{ post.body }}
+
+      <p class="post__body-footer">
+        <i>Enjoy the post? You can <a href="https://twitter.com/djm_">follow me on twitter</a> for more.</i>
+      </p>
+
+    </div>
+
+    <div class="post__footer">
+
+      <hr>
+
+      {% set older = post.get_siblings().next_page %}
+      {% set newer = post.get_siblings().prev_page %}
+
+      {% if newer %}
+        <div class="post__footer-nav post__footer-nav--newer">
+          <div class="post__footer-nav-time">Newer</div>
+          <a href="{{ newer|url }}">{{ newer.heading }}</a> &raquo;
+        </div>
+      {% endif %}
+
+      {% if older %}
+        <div class="post__footer-nav post__footer-nav--older">
+          <div class="post__footer-nav-time">Older</div>
+          &laquo; <a href="{{ older|url }}">{{ older.heading }}</a>
+        </div>
+      {% endif %}
+
+      <hr>
+
+      {% set post_url = "https://www.djm.org.uk" + post|url(absolute=true) %}
+      {{ render_twitter_button(url=post_url, text=post.heading) }}
+
+      {% if post.header_attrib_name %}
+        <p class="post__attribution">
+          <i>With thanks to {{ post.header_attrib_name }} for the {% if post.header_attrib_url %}<a href="{{ post.header_attrib_url }}" target="_blank">header image</a>{% else %}header image{% endif %}.</i>
+        </p>
+      {% endif %}
+
+    </div>
+
+  </div>
+</article>
+{% endmacro %}

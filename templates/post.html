@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% from "macros/header.html" import render_header %}
+{% from "macros/post.html" import render_post %}
+
+{% block title %}{{ this.heading }}{% endblock title %}
+
+{% block body_class %}body__post{% endblock %}
+
+{% block header %}
+  {% if this.header_image %}
+    {{ render_header(this, background_url=this.header_image, height=250, index=false) }}
+  {% endif %}
+{% endblock %}
+
+{% block body %}
+  {{ render_post(this) }}
+{% endblock body %}

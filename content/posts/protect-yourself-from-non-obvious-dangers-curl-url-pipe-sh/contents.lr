@@ -1,0 +1,74 @@
+heading: The hidden dangers of piping curl
+---
+body:
+
+Unless you haven't been installing developer focused 3rd party software recently, you will probably have seen the following command line used as a suggested way of installing a particular software package direct from the web:
+
+```bash
+curl -s http://example.com/install.sh | sh
+```
+
+This post is not here to debate whether or not this is a good idea but rather to make those that use this pattern aware of a non-obvious flaw, aside from all the obvious issues with piping 3rd party data directly into your shell. There have been countless discussions on this method and one argument for it has always been *transparency* - as in, you can simply check the script by opening it in your browser before piping it to bash via curl.
+
+This post is here to *a)* show that this level of trust can be hijacked and *b)* to provide an easy way of protecting yourself when you wish to install via curl.
+
+##Proof of concept, everything is not as it seems.
+
+To cut straight to the chase, this attack works on the theory that the content of the .sh files are easily checked for safety and that the version of the file viewed in a browser window is identical to that which would get downloaded via curl. The problem with this assumption is that a given browser and curl do not send the same user-agent by default and therefore someone with knowledge of this could [take advantage of this](https://github.com/djm/pipe-to-sh-poc/blob/master/proof_of_concept.py#L18-L24) and compromise the .sh file (jumping through other loops do to that first obviously).
+
+For this, a simple proof of concept has been written & hosted: you can view the [full source on Github](https://github.com/djm/pipe-to-sh-poc) & see the [POC hosted on Heroku](http://pipe-to-sh-poc.herokuapp.com); the POC is hosted on a single free Heroku dyno so if it's not up, it's most likely keeled over.
+
+To quickly test it yourself, simply run the following line at your prompt after first checking the URL of the .sh in your browser. The output for both should be different provided you're not sending a custom user-agent with curl.
+
+```bash
+curl -s http://pipe-to-sh-poc.herokuapp.com/install.sh | sh
+```
+
+##A simple solution
+
+The most simple solution to this is to get back the transparency lost by viewing the file directly before executing it. This post provides two methods, they both work in similar ways by sitting in the middle after curl and before the sh; if you don't like what you see, you can simply quit your editor in a way that causes a non-zero error return code (e.g in Vim, use ``:cq`` to compiler-quit). Which one you use is up to you, option 1 usually requires an install, option 2 is shorter to type.
+
+1) *Vipe* allows you to run your editor in the middle of a unix pipeline and edit the data that is being piped between programs.
+
+```bash
+curl -s http://pipe-to-sh-poc.herokuapp.com/install.sh | vipe | sh
+```
+
+Vipe is part of the ``moreutils`` package and is installable:
+
+* on Mac OSX using homebrew: ``brew install moreutils``.
+* on Ubuntu by using apt: ``apt-get install moreutils``. 
+* by using most other *nix package repositories.
+
+2) *A bash function*. Simply place this in your .bashrc or source it from somewhere:
+
+```bash
+# Safer curl | sh'ing
+function curlsh {
+    file=$(mktemp -t curlsh) || { echo "Failed creating file"; return; }
+    curl -s "$1" > $file || { echo "Failed to curl file"; return; }
+    $EDITOR $file || { echo "Editor quit with error code"; return; }
+    sh $file;
+    rm $file;
+}
+```
+
+It would then be used like:
+
+```bash
+curlsh http://pipe-to-sh-poc.herokuapp.com/install.sh
+```
+
+Your $EDITOR of choice would then be used to view the content that is actually going to be run.
+---
+pub_date: 2013-08-17
+---
+subtitle: and how to protect yourself
+---
+header_attrib_name: Dickson Phua
+---
+header_attrib_url: https://www.flickr.com/photos/gunman47/13887492828/in/photolist-nac2Mw-83dbg6-omK8X-t7Kmn9-bkcH1D-37kq6q-nVQkX-iZ9D5-oQ5mze-ogqVR-9PyRKH-bzvHaA-i6A8k2-6i85PB-56nEXr-5kw3-62DmHg-65Nths-54NntK-b8t6x-5zsyxh-9RbWi7-dTboQi-fRQBU8-yARquw-5oHM46-qQa7nZ-uxvPMq-9RbWe9-fnABbH-yrXxVL-n55Zk-dprBwc-r7uXMG-9R93wK-9RbWcC-N6B99-Bjjeqf-4MPdzq-5jRSTU-qJLspk-937Daw-fShEsy-afKuw-nU1Pfn-dYVFZD-EPc9-qTuzXe-qTnde7-9iGgKQ
+---
+header_image: header.jpg
+---
+summary: Piping directly to sh can have hidden consequences other than the obvious

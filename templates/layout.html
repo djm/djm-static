@@ -1,0 +1,78 @@
+{% from "macros/header.html" import render_header %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="ak6_N5tvrHa9V9yZgDaTu0N-NEW8mvp4vc56kddaxUQ" />
+
+    <title>{% block title %}Darian Moody - Elixir Developer, London{% endblock %}</title>
+
+    <script>document.documentElement.className += ' wf-loading';</script>
+
+    <script src="https://use.typekit.net/npv5tcq.js"></script>
+    <script>try{Typekit.load({ async: true });}catch(e){}</script>
+
+    <link rel="stylesheet" href="{{ '/static/compiled/main.css'|url }}">
+    <link rel="stylesheet" href="{{ get_pygments_stylesheet()|url }}">
+
+
+    <!-- RealFaviconGenerator.net -->
+    <link rel="apple-touch-icon" sizes="57x57" href="{{ '/static/images/favicons/apple-touch-icon-57x57.png'|url }}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{{ '/static/images/favicons/apple-touch-icon-60x60.png'|url }}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ '/static/images/favicons/apple-touch-icon-72x72.png'|url }}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ '/static/images/favicons/apple-touch-icon-76x76.png'|url }}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ '/static/images/favicons/apple-touch-icon-114x114.png'|url }}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ '/static/images/favicons/apple-touch-icon-120x120.png'|url }}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{{ '/static/images/favicons/apple-touch-icon-144x144.png'|url }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ '/static/images/favicons/apple-touch-icon-152x152.png'|url }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ '/static/images/favicons/apple-touch-icon-180x180.png'|url }}">
+    <link rel="icon" type="image/png" href="{{ '/static/images/favicons/favicon-32x32.png'|url }}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{{ '/static/images/favicons/android-chrome-192x192.png'|url }}" sizes="192x192">
+    <link rel="icon" type="image/png" href="{{ '/static/images/favicons/favicon-96x96.png'|url }}" sizes="96x96">
+    <link rel="icon" type="image/png" href="{{ '/static/images/favicons/favicon-16x16.png'|url }}" sizes="16x16">
+    <link rel="manifest" href="{{ '/static/images/favicons/manifest.json'|url }}">
+    <link rel="mask-icon" href="{{ '/static/images/favicons/safari-pinned-tab.svg'|url }}" color="#5bbad5">
+    <link rel="shortcut icon" href="{{ '/static/images/favicons/favicon.ico'|url }}">
+    <meta name="apple-mobile-web-app-title" content="Darian Moody">
+    <meta name="application-name" content="Darian Moody">
+    <meta name="msapplication-TileColor" content="#00aba9">
+    <meta name="msapplication-TileImage" content="{{ '/static/images/favicons/mstile-144x144.png'|url }}">
+    <meta name="msapplication-config" content="{{ '/static/images/favicons/browserconfig.xml'|url }}">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Atom Feed -->
+    <link rel="alternate" type="application/atom+xml" title="Darian Moody - Atom Feed" href="{{ '@atom/read'|url }}">
+
+    {% block extra_head %}{% endblock %}
+
+    <!-- Google Analytics -->
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-5840587-3', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+
+  <body class="body {% block body_class %}{% endblock %}">
+
+    {% block header %}
+    {% endblock %}
+
+    {% block body %}{% endblock %}
+
+    <footer>
+      {% block footer %}{% endblock %}
+    </footer>
+
+    {% block script %}
+      <script src="{{ '/static/compiled/app.js'|url }}"></script>
+    {% endblock %}
+
+  </body>
+</html>

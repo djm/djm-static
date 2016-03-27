@@ -1,0 +1,16 @@
+[project]
+name = djm.org.uk
+url = https://www.djm.org.uk/
+
+[packages]
+lektor-webpack-support = 0.1
+lektor-markdown-highlighter = 0.1
+lektor-markdown-admonition = 0.1
+lektor-s3 = 0.2.3
+lektor-atom = 0.1
+
+[servers.s3]
+name = S3
+default = yes
+enabled = yes
+target = s3://www.djm.org.uk

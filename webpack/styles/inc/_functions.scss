@@ -1,0 +1,12 @@
+@function color($color) {
+
+  @if map-has-key($colors, $color) {
+    $color: map-get($colors, $color);
+  } @else {
+    @if type-of($color) != color {
+      @error "Color name: `#{$color}` not found.";
+    }
+  }
+
+  @return $color;
+}
