@@ -12,8 +12,15 @@ These are your root certificates, the ones you must "trust" to have a valid SSL 
 
 However, as we're on Ubuntu and using OpenSSL the certificates will work best in PEM format. If you have your CA cert in a different format (such as DER, PKCS#7/P7B or PKCS#12/PFX) then you will need to convert them to PEM to follow this guide. This can be done with CLI tools or just a [simple website](https://confirm.globessl.com/convert.html).
 
-Your key will end up as a raw text file that starts with the line `-----BEGIN CERTIFICATE-----
-`, followed by your alpha-numerical key and ends with the line `-----END CERTIFICATE-----`. If this is not the case, something has gone wrong.
+Your key will end up as a raw text file that starts with the line:
+ 
+`-----BEGIN CERTIFICATE-----`
+
+..followed by your alpha-numerical key and ends with the line..
+
+ `-----END CERTIFICATE-----`
+
+If this is not the case, something has gone wrong.
 
 ##Trusting the certificate
 
@@ -45,14 +52,14 @@ ldapsearch -H ldaps://ldap-x.companygroup.local:636 -D "CN=Something LDAP,OU=Ran
 ```
 For more information than I'm about to give, check the [ldapsearch man page](http://linux.die.net/man/1/ldapsearch). 
 
-* -H is the full URI to the LDAP server, in our case here using `ldaps://` and port 636 (default for ldaps). 
-* -D is the 'distinguised name' that you need to start the first auth bind (binddn).
-* -w is the password for the binddn. Use single qoutes if you have any exclamation marks or other bash key characters.
-* -v is for verbose mode and -d 1 set the debug level low; both so we know more about what's happening.
+* `-H` is the full URI to the LDAP server, in our case here using `ldaps://` and port `636` (default for `ldaps`). 
+* `-D` is the 'distinguised name' that you need to start the first auth bind (binddn).
+* `-w` is the password for the binddn. Use single qoutes if you have any exclamation marks or other bash key characters.
+* `-v` is for verbose mode and `-d 1` set the debug level low; both so we know more about what's happening.
 
 Hit enter, and all things going well you should have a valid encrypted connection to the LDAP server. You'll see something like below if it went OK. If not, read on:
 
-```
+```text
 # numResponses: 1
 ldap_free_connection 1 1
 ldap_send_unbind
@@ -62,14 +69,14 @@ ldap_free_connection: actually freed
 
 ##Troubleshooting the connection
 
-```
+```text
 ldap_bind: Invalid credentials (49)
 additional info: 80090308: LdapErr: DSID-0C0903AA, comment: AcceptSecurityContext error, data 52e, v1772
 ```
 
 If you're seeing the above, semi-congrats because at least you've connected fine. You have however failed the first bind authentication and will therefore need to check your 'Distinguished Name' (DN) and bind password (-D & -w flags).
 
-```
+```text
 ldap_connect_to_host: Trying x.x.x.x:636
 ldap_pvt_connect: fd: 3 tm: -1 async: 0
 TLS: hostname (ldap-x) does not match common name in certificate (ldap-x.companygroup.local).
