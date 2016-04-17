@@ -1,0 +1,217 @@
+heading: Writing extensible Elixir with Behaviours
+---
+subtitle: a.k.a the adapter pattern, pluggable backends, interfaces...
+---
+body:
+
+Let's set the scene. You've written a piece of code that you would like to work with a variety of different "things" – yeah, we're getting properly scientific here, bare with me. These various things share a common trait in that they achieve the same high-level result; but the way they each go about working towards that result may be slightly or—more likely—completely different. 
+
+Often your code only needs to use one of these things at a time, but you don't want to put all your eggs in one basket and leave code specific to that thing throughout your entire codebase. That would be nasty. And wouldn't it be ace if other people could bring more "things" to the table and extend your software without you even lifting a finger? 
+
+*"I don't have all day mate. Can't I just pick one and go with it?"*
+
+You definitely could. But what happens if you change your mind about the thing you'd like to use? What if the thing you thought was a gleaming unicorn actually turns out to be a squashed toad, or worse: what if the thing magically *disappears* in a puff of VC-farted air? In such a horrific circumstance it would be great if we could simply ~~murder the founders~~ swap out our thing for another thing or just rewrite a new thing without having to change *everything* we've already written. Right?
+
+##Enough about things already..
+
+By now you may have grasped what I'm getting at. "Things" come in millions of flavours but let's stop with the vagueness and give some proper real world examples:
+
+* a messaging app that needs to send an email but has a number of delivery options open to it: SMTP, Mandrill, Sendgrid, Postmark, [future SaaS product], etc. With this first example, the "things" are the delivery methods, they all accept & deliver an email but they differ in how they achieve it.
+ 
+* a CV generator that takes input from a web form and renders the given data in HTML, PDF, Markdown, LaTeX, [insert format yet to be invented], etc. The "things" here are the differing document formats, they all accept the same input but they each do different things with it to achieve the same high-level result, which is a document the user can take away. 
+
+* a storage engine that takes data and stores it in a database: PostgreSQL, MySQL, SQLite etc. Here the "things" are the databases, they can all accept queries to store data but they each handle them in varying ways. And yup, this just described [Ecto](https://github.com/elixir-lang/ecto).
+
+All of these scenarios pose a serious problem for us as we want to work with these damn things but the differences between them present a daunting barrier. Many languages have a solution to this and Elixir is no different: enter the *Behaviour*.
+
+##Elixir's Behaviours
+
+The hint is in the name. To interface with multiple things as if they were one: we need to define their common *behaviours* in an abstraction. And that is exactly what an Elixir [Behaviour](http://elixir-lang.org/getting-started/typespecs-and-behaviours.html#behaviours) is: the definition of said abstraction. Behaviours exist like a specification or a rule book allowing other modules that want to enact that Behaviour to follow the rules word for word. This allows your calling code to only care about the common interface and therefore it can be blissfully unaware of the horror that lies beneath. Need to swap services? Just do it! Your calling code won't care.
+
+But what does one look like? A Behaviour is defined as a normal module, inside which you define a group of function specs that *must* be implemented by any modules adopting that Behaviour. Each function spec is defined by using the `@callback` directive and a [typespec](http://elixir-lang.org/getting-started/typespecs-and-behaviours.html#types-and-specs) signature, which is a way of defining what each function receives and returns. Without further ado:
+
+```elixir
+defmodule Parser do
+  @callback parse(String.t) :: any
+  @callback extensions() :: [String.t]
+end
+```
+
+All modules that wish to adopt this Behaviour must:
+
+1. Explicitly state they wish to do so by using: `@behaviour Parser`.
+2. Implement `parse/1` which takes a string and returns any term.
+3. Implement `extensions/0` which takes zilch and returns a list of strings.
+
+Behaviour usage is explicit and therefore any modules adopting the Behaviour must actively state that fact by using the `@behaviour SomeModule` module attribute; this is incredibly handy for you as it means you can lean on the compiler to warn you when your modules are not following the spec. If you update the Behaviour with new signatures, you can be sure as hell that the compiler will be on your tail to make sure the adopters follow suit.
+
+##Delving deeper
+
+If you don't quite grok it, it may help to look at other languages. If you're versed in Python, this post on [Pluggable Backends](http://charlesleifer.com/blog/django-patterns-pluggable-backends/)  by Charles Leifer is a great explanation of the general pattern. If you're from Ruby, you can read it too - the philosophy is the same (inherit a base adapter and hope for the best, eek). And for Gophers, you will find some similarities (with some key differences) in [Interfaces](http://jordanorelli.com/post/32665860244/how-to-use-interfaces-in-go).
+
+Having said that - it's much easier to show how Behaviours can help you write extensible code with a live working example and so we're going to go deeper with the email case I explained earlier and in particular, [Steve Domin](https://twitter.com/stevedomin) & [Baris Balic](https://twitter.com/BarisBalic)'s [Swoosh](https://github.com/swoosh/swoosh) email library which utilises Behaviours to provide a stack of email delivery methods, while also allowing extra ones created by others to be plugged in.
+
+##Defining a Behaviour's public contract
+
+We've been through the *why* so let's skip to the real world and take a look at a library that needed it: [Swoosh](https://github.com/swoosh/swoosh). Swoosh allows you to create an email and send it via a bunch of delivery options. It needed to abstract the common behaviour of delivering an email so let's have a look at how it does so in [`Swoosh.Adapter`](https://github.com/swoosh/swoosh/blob/ba3af6753171f7010bf3ed826d4156b8fa57df6f/lib/swoosh/adapter.ex).
+
+```elixir
+defmodule Swoosh.Adapter do
+  @moduledoc ~S"""
+  Specification of the email delivery adapter.
+  """
+
+  @type t :: module
+
+  @type email :: Swoosh.Email.t
+
+  @typep config :: Keyword.t
+
+  @doc """
+  Delivers an email with the given config.
+  """
+  @callback deliver(email, config) :: {:ok, term} | {:error, term}
+end
+```
+
+As you can see, the example is slightly longer than the one from the documentation as Swoosh defines a bunch of types for extra readability & clarity (e.g `config` is used as an alias to be more descriptive than `Keyword.t`). We can ignore that for now though, we care about the `@callback` directive which sets the rules for the one and only function on the delivery abstraction: to `deliver` email. The `deliver/2` specification tells us that it takes two arguments: a `Swoosh.Email` struct and a config as a keyword list; it can then "do something"; and in return it gives back an idiomatic ok/error tuple. 
+
+##Adopting a behaviour
+
+It's time to define the "does something". We'll take a look at 2 adapters that adopt the Behaviour and ship with Swoosh. First we'll take a simple one: the `Local` client which simply delivers email to an in-memory inbox. 
+
+```elixir
+
+defmodule Swoosh.Adapters.Local do
+  
+  @behaviour Swoosh.Adapter
+
+  def deliver(%Swoosh.Email{} = email, _config) do
+    %Swoosh.Email{headers: %{"Message-ID" => id}} = Swoosh.InMemoryMailbox.push(email)
+    {:ok, %{id: id}}
+  end
+end
+```
+
+There's not really much to explain here thankfully. First up the adapter explicitly says that it is adopting the `Swoosh.Adapter` Behaviour. It then goes on to define the `deliver/2` function with exactly the same signature as was found in the Behaviour definition. Remember, the explicit statement of adoption is there to let the compiler do the hard work. If the Swoosh devs were to add an extra function to their mail delivery Behaviour, all modules that adopt that Behaviour would have to be updated too, otherwise the application would simply not compile, it's a fantastic safety net.
+
+The next client, for sending an email via `Sendgrid`, is too long to copy here but you can [reference it on GitHub](https://github.com/swoosh/swoosh/blob/4f3ed760aa8c6bd3c6e8f2d952ecea9575a6fddd/lib/swoosh/adapters/sendgrid.ex#L28). You will note that the module is a lot more complex and defines other functions along with the one it must do: `deliver/2`. This is worth noting: the Behaviour contract does not care what else is defined in the module. The functions do not have to map 1:1; the adopter must simply implement the functions defined in the Behaviour and then it is free to do what it likes. This allows for more complex adapters as the functions common to the Behaviour can call out to other functions in the same module or elsewhere to increase readability & maintainability.
+
+##Adding the extensibility
+
+We've learnt how to define a Behaviour, and how to adopt it but how does this help us when we actually want to use them in the calling code of our application? There are a number of ways to go about using Behaviours, all of varying complexity. We'll start with the easiest and work our way up.
+
+###Dependency injection via a function head
+
+Going back to the earlier Parser Behaviour example from the docs:
+
+```elixir
+defmodule Document do
+  @default_parser XMLParser
+
+  defstruct body: ""
+
+  def parse(%Document{} = document, opts // []) do
+    {parser, opts} = Keyword.pop(opts, :parser, @default_renderer)
+    parser.parse(document.body)
+  end 
+end
+```
+
+Here we use a contrived `Document` module which has created a function-based wrapper for our parsing Behaviour so that we can easily switch out parsers. Let's run it..
+
+```elixir
+Document.parse(document)
+```
+We pass just one argument and no options, this causes the `:parser` options key to be unavailable leaving the `Keyword.pop` to fall back to the `@default_parser` module that we supplied as a module attribute. The `parse/1` function of that parser then gets executed, being sent the string of the document body.
+
+Great, but what if we don't want to use the `XMLParser`?
+
+```elixir
+Document.parse(document, parser: JSONParser)
+```
+
+Because both the `XMLParser` and `JSONParser` adopted the `Parser` Behaviour, they both support the `parse/1` function called within the parsing wrapper and thus swapping the parser out becomes as simple as injecting the new dependency into the wrapper function. This way of handling behaviours is very malleable and powerful for the programmer, it even allows different parts of the code base to use different parsers for example, but there are downsides. This method means you have to rely on the user knowing *how* and *where* to inject the dependency which will require more intricate documenting. On top of that, what if the user wants to use different dependencies in different environments? Your calling code will get lumped with the effort of working out which module to use and when – wouldn't it be nicer if we could set the desired adapter once and forget about it? 
+
+###Dependency injection via Mix Config
+
+Thanks to `Mix`'s project configuration, this is a solved problem. If we take the Parser example again: 
+
+```elixir
+defmodule Document do
+  @default_parser XMLParser
+
+  defstruct body: ""
+
+  def parse(%Document{} = document) do
+    config = Application.get_env(:parser_app, __MODULE__, [])
+    parser = config[:parser] || @default_parser
+    parser.parse(document.body)
+  end 
+end
+```
+
+As you can see, our `parse` function wrapper has lost the options argument and instead is calculating which parser to use based on the current OTP application's Mix configuration. So, given a Mix config that looks like this:
+
+```elixir
+# config/config.exs
+config :parser_app, Document,
+  parser: JSONParser
+```
+
+..our `Document.parse` wrapper will know to use the `JSONParser` for parsing. This helps us a great deal as our adapter choice is no longer anchored to the calling code and therefore a simple update to the Mix config, or an environment-specific config can swap the parser used in the future. Again though, this method has its downsides: the configuration is very much tied to the `Document` module due to the use of `__MODULE__` (the module name) in the config/env lookup. This means that we've gone from being able to use multiple different parsers to just one throughout all our code that uses the `Document` module. While in most instances one adapter is likely enough for the entire project, what if we come across a situation where we need to use different adapters with the same bit of code? What if a segment of your codebase needs to send email via Sendgrid but another part is required to interact with your legacy SMTP server? Let's go back to Swoosh..
+
+
+###Achieving the advantages of both...
+
+Luckily for us, Swoosh replicates how Ecto handles this problem. As the programmer, you are required to define your own Module somewhere in your codebase which then specifies `use Swoosh.Mailer`. Your calling code then uses this module as a wrapper to the underlying `Swoosh.Mailer`. Details on how this patterns works is out of scope for this article but for basics: the `use` builtin in Elixir tells the compiler to run the macro named `__using__` in the file the module wishes to use. You can see exactly what the `Swoosh.Mailer.__using__` macro includes in your wrapper module by [taking a look on GitHub](https://github.com/swoosh/swoosh/blob/4f3ed760aa8c6bd3c6e8f2d952ecea9575a6fddd/lib/swoosh/mailer.ex#L60).
+
+This means the project configuration of Swoosh exists in two places:
+
+```elixir
+# In your config/config.exs file
+config :sample, Sample.Mailer,
+  adapter: Swoosh.Adapters.Sendgrid,
+  api_key: "SG.x.x"
+
+# In your application code
+defmodule Sample.Mailer do
+  use Swoosh.Mailer, otp_app: :sample
+end
+```
+
+By doing it this way, each created wrapper module can have it's own settings in the Mix config. To create the ability to use Swoosh multiple times with different adapters in the same codebase, all the developer has to do is define two or more of their own modules which all `use Swoosh.Mailer`.
+
+..and that is that! You now know how to create some very publicly extensible code so you totally won't have to resort to murder when the service you so heavily rely on pulls the plug. Before we end, just a few more things to wrap up...
+
+##More examples of Behaviours in the wild
+
+Reading already existing code will help cement your understanding of Behaviours and when to use them. Here's two to get you started:
+
+* [Plug](https://github.com/elixir-lang/plug) - Elixir's spec for composable web app modules is actually a Behaviour itself. When someone says they have created a Plug, they are in fact saying that they have adopted the Plug Behaviour which is incredible simple: a module must simply implement 2 functions: `init/1` and `call/2`. The use of Behaviours here actually allow for the composability of Plugs, as their public API is known it allows them to be easily "plugged together" in to pipelines, as seen in Phoenix.
+
+* [Ecto](https://github.com/elixir-lang/ecto) - uses them for a myriad of things including the storage adapters, custom field types, associations, changeset relations, database connections, postgrex extensions, migration adapters and the repo itself.
+
+##Things to watch out for
+
+To conclude & summarise the benefits of this approach: it allows for loosely coupled code that adheres to an explicit public contract. It enables programmers to extend the current functionality by explicitly detailing in advance the interactions that occur. The fact the public contract is explicit makes it much easier to test without [resorting to "mocking as a verb"](http://blog.plataformatec.com.br/2015/10/mocks-and-explicit-contracts/).
+
+That being said, this approach is not perfect for all problems. By defining a common set of interactions between all plugins you are essentially saying that all plugins provide the same functionality and that is obviously not always true: in situations like these you can find yourself coding for the lowest common denominator. For an even-further reading exercise I would recommend nosy-ing around the Ecto codebase, and in particular how they handle the fact that only certain database backends provide [DDL transactions](https://github.com/elixir-lang/ecto/blob/a75ae3aafacfb05a5c123e9fe1b8be19cd5eef96/lib/ecto/migrator.ex#L111) by providing a [common feature-test callback](https://github.com/elixir-lang/ecto/blob/a45390e1dead49574d1f1c72ebaf8b539a78e1d4/lib/ecto/adapter/migration.ex#L39) as part of the Behaviour.
+
+##Finishing up
+
+That turned into a bit of a **mammoth** post. Well, thanks for getting this far & hopefully something clicked if you did. If you'd like to add anything, feel free to shoot me an [email](mailto:mail@djm.org.uk) or catch me on [twitter](https://twitter.com/djm_), otherwise share away and spread the Elixir love!
+
+Special thanks to [Baris](https://twitter.com/BarisBalic) for reading the draft through. Big ups.
+---
+header_attrib_name: chumlee10
+---
+header_attrib_url: https://www.flickr.com/photos/chumlee/25081508541/
+---
+pub_date: 2016-04-09
+---
+summary: Elixir's behaviours are a way to define the public contract; they allow developers to write highly extensible code. But how do you use them?
+---
+_discoverable: yes
+---
+header_image: header.jpg
