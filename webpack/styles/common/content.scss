@@ -23,6 +23,28 @@
     margin: 1rem 0 1rem 2rem;
   }
 
+  ol {
+    counter-reset: item;
+    margin: 1rem 0 1rem 0;
+    padding-left: 1rem;
+
+    li {
+      counter-increment: item;
+      display: table-row;
+      list-style-type: none;
+    }
+
+    li::before {
+      content: counter(item, lower-roman) '.';
+      display: table-cell;
+      font-style: italic;
+      margin-left: -1rem;
+      padding-right: 1rem;
+      text-align: right;
+    }
+
+  }
+
   li {
     margin: 0 0 1rem 0;
   }
@@ -32,9 +54,10 @@
     word-wrap: break-word;
   }
 
-  p code {
-    color: color(dark-grey);
-    font-size: .9rem;
+  p code,
+  li code {
+    font-size: .8rem;
+    font-weight: bold;
     white-space: pre-line;
   }
 
@@ -75,12 +98,12 @@
     }
 
     pre {
-      font-size: .8rem;
+      font-size: .7rem;
       letter-spacing: -1px;
       line-height: 1.6;
 
       @include breakpoint-upwards($xs-breakpoint) {
-        font-size: .85rem;
+        font-size: .75rem;
         letter-spacing: normal;
       }
     }
