@@ -27,7 +27,7 @@
 }
 
 @mixin monospace {
-  font-family: "source-code-pro", monospace;
+  font-family: Monaco, Consolas, 'Lucida Console', monospace;
 }
 
 @mixin text-shadow-to-crop-underline($color) {

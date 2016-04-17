@@ -25,6 +25,7 @@
   }
 
   &__date {
+    @include sans-serif;
     display: block;
     margin: 0 auto;
     text-align: center;
@@ -101,6 +102,7 @@
   }
 
   &__footer {
+    @include sans-serif;
     margin-bottom: 4rem;
     text-align: center;
   }
