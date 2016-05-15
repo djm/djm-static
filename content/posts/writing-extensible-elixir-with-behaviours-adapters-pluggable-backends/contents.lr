@@ -210,7 +210,7 @@ header_attrib_url: https://www.flickr.com/photos/chumlee/25081508541/
 ---
 pub_date: 2016-04-09
 ---
-summary: Elixir's behaviours are a way to define the public contract; they allow developers to write highly extensible code. But how do you use them?
+summary: Learn how to write extensible Elixir with Behaviours: when they should be used and why you'd want to use them.
 ---
 _discoverable: yes
 ---

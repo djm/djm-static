@@ -97,7 +97,7 @@ pub_date: 2016-05-15
 ---
 subtitle: What's the difference anyway?
 ---
-summary: What is the difference between Elixir's Behaviours and Protocols? -When you should use them and why.
+summary: Confused about the difference between Elixir's Behaviours and Protocols? Read this to see when and why you should use them & how they differ.
 ---
 header_attrib_name: John Loo
 ---
