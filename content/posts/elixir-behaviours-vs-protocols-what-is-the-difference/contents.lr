@@ -1,0 +1,106 @@
+heading: Elixir's Behaviours vs Protocols
+---
+body:
+
+If you're just starting to learn Elixir, you will see both of these terms bandied about quite a bit and if you've taken the same route I did back when I first started then you've mostly ignored them until now, aside from reading short blurbs here and there. This has landed you in the situation where you likely don't know when or where you'd use them or even what the fundamental difference between the two are...that ends now! Behaviours and Protocols both bring polymorphic abilities to Elixir and are thus often confused but they are intrinsically different and bring their own flavour of polymorphism to different parts of the language. 
+
+This post will be deliberately light on actual code; once you grok the core concepts there is [plenty of great](http://elixir-lang.org/getting-started/protocols.html) information [out there](http://elixir-lang.org/getting-started/typespecs-and-behaviours.html#behaviours) detailing how to implement them.
+
+## Polymorphic what mate? 
+
+If you didn't think of the *Mighty Morphin Power Rangers* when you read that word, you can probably skip to the next header or be glad you never watched the Power Rangers. But for the rest of you, here's a quick lesson on what polymorphism is and why we would need it. 
+
+Poly = *many*. Morph = *change or form*. Polymorphism is the ability in programming to present the same interface for differing underlying forms. What does that mean for us? Protocols allow the defining of interfaces (a series of functions) which can go on to be implemented by any data type and then used generically; and Behaviours define a common interface to a module, so that modules can be used interchangeably. Don't worry if you're lost, we'll delve deeper later.
+
+If you're ever added a float to an integer in a dynamic language, this is under-the-hood polymorphism at work. Both of them are numbers to us but they are stored differently in memory and are therefore different from the perspective of a computer. Polymorphism allows us to do calculations between the two data types without worrying about their underlying differences. In most languages, this happens behind the scenes by defining a *common contract*. 
+
+##Polymorphism in Elixirlang
+
+Elixir can mostly be thought of in terms of 3 core things: processes, modules & data. In José's words: "they are all interconnected: processes run the code defined in modules that manipulate the data types" [¹](https://groups.google.com/d/msg/elixir-lang-talk/Vq--xwBMmAI/WRjH3NKlZVYJ).
+
+All 3 have their own way of "doing" polymorphism in Elixir: 
+
+###Processes
+
+Processes send messages to other processes without needing to care what the receiver process is or even what it does as long as it knows how to accept and deal with the message it was sent. The common interface here is how processes communicate with each other via the common contract that is message passing. Elixir has no way to document these messages as code, therefore making this form of polymorphism *implicit*.
+
+###Modules
+
+Modules hold a group a functions in a namespace. Code which calls a specific module doesn't really care about which module it is calling other than having the expectation that it contains a function of the desired arity and that it accepts the arguments being passed to it. Therefore if a module was to mimic another one and define exactly the same functions with the same signatures then it can be used interchangeably by the calling code. 
+
+Actually, you could walk away from this post right now and write code that does that - but the result would be an implicit contract, your 2 modules would not be contractually linked in any other way than their circumstantial shared interface (this may sound familiar to gophers..). And this my friend is where Behaviours come in.
+
+A Behaviour is simply a module that defines a spec which other modules can implement; this allows our Elixir code to document the polymorphic contract and make it *explicit*; it also allows our calling code to be not care one iota about the underlying implementation. Behaviours exist like a specification or a rule book allowing other modules that want to enact that Behaviour to follow the rules word for word. 
+
+###Data
+
+Data refers to the types which hold our information and flow around a system. Functions in Elixir can express that they are willing to work with certain data types by using pattern matching and guard statements against their arguments. But what happens when we want to write a function that works with a myriad of different data types?
+
+You might answer this with the fact that we could just define multiple functions of the same name and use pattern matching along with guards to provide the different implementation for all the data types. and you'd be right! We can totally do that. And it's even a great solution in many cases when you're only dealing with your own code or a specific subset of data types.
+
+But what happens when we're writing a library that we want to be  really extensible? How does another developer take your and use your implementations against their own data types of which you know nothing about at the time of writing? This is where Protocols shine. By defining an interface that different data types can have different implementations of, another developer can come along and easily write their own implementation of your Protocol for their own data type.
+
+A Protocol is defined with the `defprotocol` macro and is simply a group of function headers that a data type must implement if it is considered to be implementing that protocol. A data type then goes on to implement a Protocol by using the `defimpl ProtocolName, for: DataType` line where `ProtocolName` is the name of the Protocol being implemented and `DataType` is the data type it is being implemented for.
+
+## To summarise
+
+Protocols handle polymorphism at the data/type level whereas Behaviours provide it at the module level. While they seem similar it is because they both provide polymorphism rather than the fact they get used for the same things. Having said that,  let's take a little further look at those use cases.
+
+Behaviours answer the questions: 
+
+* "How can I define a public contract/spec for my modules to implement?"   
+
+* "How can I write code that can be extended by others?"   
+
+* "How would I go about writing a plugin/adapter based system?"   
+
+* "How can I write calling code to work with many swappable modules?"  
+
+Protocols answer the questions:
+
+* "How can I have different implementations of the same function based on the different types I'm working with?"   
+
+* "How can I write code that can be extended to work with new data types I don't know about yet?"   
+
+## Valid use cases
+
+**Behaviours**: imagine you wanted to send an email but didn't particularly care how you did it. One day you might need to send it via a local SMTP server, another day via a paid online service (e.g Sendgrid). What do we need to do to make this happen without writing custom code which interacts with both methods of delivery? We need a common interface. If the function that sends email via an SMTP server accepts exactly the same arguments as the function that sends email via Sendgrid then we can switch out the functions easily. They become pluggable, and this is where Behaviours come in. With Behaviours we can define a module that documents the signature of this function (what it takes and what it returns) and then our SMTP and Sendgrid modules can both "implement" this behaviour and provide their own implementations of that function which match the one defined in the Behaviour. This way everything is explicit and our intentions are made known via code.
+
+This is a *real use case*™ and can be viewed in both the [Swoosh](https://github.com/swoosh/swoosh/blob/47d7a0e8b7b1bb0d4d6054c7bf01f61235c7c8a9/lib/swoosh/adapter.ex#L15) and [Bamboo](https://github.com/thoughtbot/bamboo/blob/34bc93a96132794a2f9de0b47ffead5059a55e9b/lib/bamboo/adapter.ex#L36) email libraries.
+
+**Protocols**: imagine a scenario where you have a series of varying data types that you need to print information about. Each data type stores its data in a unique way and has unique properties, and you also want the function to be able to work with data types that other developers may bring to the table. Here is where we would write a Protocol, perhaps named `Info` which contains a function called `info` that takes one argument - the data type instance to print information about. The various data types would then implement the `Info` protocol by defining their own implementations of the `info` function which each print information about the type instance that is helpful to the user.
+
+This is also a *real use case*™ and is actually built in to Elixir as [`IEx.Info`](https://github.com/elixir-lang/elixir/blob/a8547c43c75595630383f592f6fb03cd1d999466/lib/iex/lib/iex/info.ex#L1). Whenever you use `i <data-variable>` in iex, this protocol will be being invoked in the background to display the information.
+
+## Self documentation is power to the reader 
+
+While these constructs allow us to write extensible Elixir, they are also self documenting. When writing code, there is a common misconception that you are writing it for a machine to read but this is not the sole reality. A machine will eat whatever you chuck at it, it does not care for your coding style. No, you are writing code for whoever is going to read it next, even when that person is you in 6 months time. 
+
+[Polymorphism can be a dangerous beast](http://i.imgur.com/UPvQeEz.jpg) in other languages as it is often implicit by design: if it quacks like a duck then it must be a duck, right? Wrong, and this leads to confusion. Over in Elixir lang we prefer explicitness over implicitness.
+
+By providing Behaviours & Protocols, Elixir allows us to define and therefore document our interfaces as code. Because we explicitly define the contracts and explicitly link them via the use of code that gets committed it means the next reader is not left guessing as to the desired functionality: the desired intention of the person that wrote it is quite literally written in plain English in front of them. 
+
+On top of this, because we have these things defined in code we can "lean on" (rely on) the compiler to check that our code is covering all the bases it should and is actually complying with the contracts that it has explicitly stated it should. 
+
+And we get all this without writing actual documentation or comments which have a terrible tendency to get out of date. Proper ace. 
+
+## So in conclusion.. 
+
+Both of these language features are designed to being polymorphic attributes to Elixir; Behaviours bring polymorphism at the module level and Protocols bring it at the type/data level. 
+
+If you would like to read a more in depth about Behaviours in particular, you can read my earlier post which delves further into [what Elixir's Behaviours are, what they look like, what they do and when you'd use them](/posts/writing-extensible-elixir-with-behaviours-adapters-pluggable-backends/). 
+
+This post has taken many explanations from across the web and amalgamated them, so I'd like to say thanks to José Valim, Saša Jurić, Eric Meadows-Jönsson & Alexander Songe. And of course you for reading this far, nice one. 
+
+---
+pub_date: 2016-05-15
+---
+subtitle: What's the difference anyway?
+---
+summary: What is the difference between Elixir's Behaviours and Protocols? -When you should use them and why.
+---
+header_attrib_name: John Loo
+---
+header_attrib_url: https://www.flickr.com/photos/johnloo/9325937053/
+---
+header_image: header.jpg
