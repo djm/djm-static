@@ -38,13 +38,13 @@ Data refers to the types which hold our information and flow around a system. Fu
 
 You might answer this with the fact that we could just define multiple functions of the same name and use pattern matching along with guards to provide the different implementation for all the data types. and you'd be right! We can totally do that. And it's even a great solution in many cases when you're only dealing with your own code or a specific subset of data types.
 
-But what happens when we're writing a library that we want to be  really extensible? How does another developer take your and use your implementations against their own data types of which you know nothing about at the time of writing? This is where Protocols shine. By defining an interface that different data types can have different implementations of, another developer can come along and easily write their own implementation of your Protocol for their own data type.
+But what happens when we're writing a library that we want to be really extensible? How does another developer take your code and use your implementations against their own data types of which you knew nothing about at the time of writing? This is where Protocols shine. By defining an interface that different data types can have different implementations of, another developer can come along and easily write their own implementation of your Protocol for their own data type.
 
 A Protocol is defined with the `defprotocol` macro and is simply a group of function headers that a data type must implement if it is considered to be implementing that protocol. A data type then goes on to implement a Protocol by using the `defimpl ProtocolName, for: DataType` line where `ProtocolName` is the name of the Protocol being implemented and `DataType` is the data type it is being implemented for.
 
 ## To summarise
 
-Protocols handle polymorphism at the data/type level whereas Behaviours provide it at the module level. While they seem similar it is because they both provide polymorphism rather than the fact they get used for the same things. Having said that,  let's take a little further look at those use cases.
+Protocols handle polymorphism at the data/type level whereas Behaviours provide it at the module level. While they seem similar it is because they both provide polymorphism rather than the fact they get used for the same things. Lets cement that knowledge by taking a little further look at those use cases.
 
 Behaviours answer the questions: 
 
@@ -78,9 +78,9 @@ While these constructs allow us to write extensible Elixir, they are also self d
 
 [Polymorphism can be a dangerous beast](http://i.imgur.com/UPvQeEz.jpg) in other languages as it is often implicit by design: if it quacks like a duck then it must be a duck, right? Wrong, and this leads to confusion. Over in Elixir lang we prefer explicitness over implicitness.
 
-By providing Behaviours & Protocols, Elixir allows us to define and therefore document our interfaces as code. Because we explicitly define the contracts and explicitly link them via the use of code that gets committed it means the next reader is not left guessing as to the desired functionality: the desired intention of the person that wrote it is quite literally written in plain English in front of them. 
+By providing Behaviours & Protocols, Elixir allows us to define and therefore document our interfaces as code. Because we explicitly define the contracts and explicitly link them via code that gets committed it means the next reader is not left guessing as to what was going on in the mind of the developer that wrote it: the desired intention is quite literally written in plain English in front of them.
 
-On top of this, because we have these things defined in code we can "lean on" (rely on) the compiler to check that our code is covering all the bases it should and is actually complying with the contracts that it has explicitly stated it should. 
+On top of this, because we have these things defined in code we can "lean on" (rely on) the compiler to check that our code is covering all the bases it should and is actually complying with the contracts that it has explicitly stated it should. With Behaviours: need another function and want it implemented across the board? Just do it and the compiler will have your back, ensuring that all the modules that implemented the original Behaviour are updated.
 
 And we get all this without writing actual documentation or comments which have a terrible tendency to get out of date. Proper ace. 
 
