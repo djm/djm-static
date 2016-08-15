@@ -112,7 +112,7 @@ defmodule Document do
   defstruct body: ""
 
   def parse(%Document{} = document, opts // []) do
-    {parser, opts} = Keyword.pop(opts, :parser, @default_renderer)
+    {parser, opts} = Keyword.pop(opts, :parser, @default_parser)
     parser.parse(document.body)
   end 
 end
