@@ -40,7 +40,7 @@ access_log /var/log/nginx/cache.log cache;
 access_log /var/log/nginx/access.log;
 ```
 
-The first line here defines some mime-types and defaults which should exist in most nginx configurations; the following log_format setting funnily enough sets the format for the log: we include a lot of extra information here to make it easier for us to debug later (such as whether the Wordpress Auth cookie has been set, the browser user-agent and request status code etc). Most of the variables used here are part of the global nginx set available to the config files but some (such as the $wordpress_auth one) are custom set later within the file. '*cache*' is the name given to this log format so you can use it in the next lines. 
+The first line here defines some mime-types and defaults which should exist in most nginx configurations; the following log_format setting funnily enough sets the format for the log: we include a lot of extra information here to make it easier for us to debug later (such as whether the Wordpress Auth cookie has been set, the browser user-agent and request status code etc). Most of the variables used here are part of the global nginx set available to the config files but some (such as the $wordpress_auth one) are custom set later within the file. '*cache*' is the name given to this log format so you can use it in the next lines.
 
 Here we set 2 different access logs, one with the log format we just specified (*cache*) and one with the default access log format; this is purely to make debugging easier and is not necessary (although I would advise having at least one access log).
 
@@ -59,7 +59,7 @@ Cached request data is stored as simple files where the filename is an MD5 hash 
 * **Levels** - The *levels* argument sets the number of subdirectories the cache will delve into it. I'm going to be honest and say I don't know why this is a setting - there's lots of misinformation about and I couldn't find anything decent on it (the docs do not explain it well enough currently). Get in touch if you know and I can update this but for now 1:2 caches the files two directories down and seems to be what most people do.
 
 * **Key Zone** - This is the name and size of the shared memory allocation for this cache (in memory, not on disk cache). You name it so you can use it in the location directive later and the size is obvious; here we give it 30mb which is actually way more than adequate for a site of this size.
- 
+
 * **Cache Size** - This is the maximum size (*max_size*) your cache will take up *on disk* before the <del>oldest</del> least-recently used cached requests start being cleaned up to make room for the new ones.
 
 * **Cache Invalidation** - The setting here is called *inactive* and provides the amount of time a cached request should remain 'valid'. This can be set to *30m* (30 minutes), *2h* (2 hours), *3d* (3 days) etc, etc.
@@ -188,7 +188,7 @@ The problem with caching all responses is that there are some we definitely do n
     }
 }
 ```
- 
+
 And the final directive! This one matches all remaining paths that we haven't already caught and caches their response. We'll go through each bit individually:
 
 * **proxy_pass**: This allows us to pass the request through to our upstream Apache.
@@ -322,8 +322,8 @@ http {
                                   http_504
                                   http_404;
             # 2 rules to dedicate the no caching rule for logged in users.
-            proxy_cache_bypass $wordpress_auth; # Do not cache the response.
-            proxy_no_cache $wordpress_auth; # Do not serve response from cache.
+            proxy_cache_bypass $wordpress_auth; # Do not serve response from cache.
+            proxy_no_cache $wordpress_auth; # Do not cache the response.
         }
 
 	# Cache purge URL - works in tandem with WP plugin.
@@ -332,7 +332,11 @@ http {
         }
     } # End server
 } # End http
+
 ```
+
+*Edit - May 2017*: with extra thanks to [@pcv57](https://twitter.com/@pcv57) for a correction on my proxy_cache_bypass & proxy_no_cache comments, which were the wrong way around for 6 years!
+
 ---
 pub_date: 2011-04-07
 ---
