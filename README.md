@@ -8,21 +8,19 @@ View @ [https://www.djm.org.uk](https://www.djm.org.uk)
 
     git clone git@github.com:djm/djm-static
     cd djm-static/
-    mkvirtualenv djm-static
-    pip install -r requirements.txt
-
+    pipenv install
 
 ## Run
 
     # Simply..
-    lektor server
+    pipenv run lektor server
 
     # and with a host and webpack in watch mode
-    lektor server -h 0.0.0.0 -f webpack
+    pipenv run lektor server -h 0.0.0.0 -f webpack
 
 ## Publish/Deploy
 
-    lektor deploy s3
+    pipenv run lektor deploy s3
 
 ## Style
 
@@ -37,4 +35,4 @@ View @ [https://www.djm.org.uk](https://www.djm.org.uk)
 
 ## License
 
-© 2016 Darian Moody. All rights reserved.
+© 2016-2018 Darian Moody. All rights reserved.
