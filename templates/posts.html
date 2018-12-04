@@ -1,11 +1,35 @@
 {% extends "layout.html" %}
 
-{% block extra_head %}
+{% from "macros/posts.html" import render_posts %}
+{% from "macros/twitter_button.html" import render_twitter_button %}
 
-<meta http-equiv="refresh" content="0; url={{ '/'|url }}" />
+{% block title %}{{ super() }}{% endblock %}
+
+{% block body_class %}root{% endblock %}
+
+{% block header %}
+  {% if this.header_image %}
+    {{ render_header(this, background_url=this.header_image, height=300) }}
+  {% else %}
+    {{ super() }}
+  {% endif %}
 
 {% endblock %}
 
-{% block title %}{% endblock %}
+{% block body %}
 
-{% block body %}{% endblock %}
+  <section class="container--xs posts-container">
+    {% set posts = site.query('/posts').limit(1000) %}
+
+    {{ render_posts(posts) }}
+    <hr>
+    <footer>
+      {% if this.header_attrib_name %}
+        <p class="post__attribution">
+          <i>With thanks to {{ this.header_attrib_name }} for the {% if this.header_attrib_url %}<a href="{{ this.header_attrib_url }}" target="_blank">header image</a>{% else %}header image{% endif %}.</i>
+        </p>
+      {% endif %}
+    </footer>
+  </section>
+
+{% endblock %}

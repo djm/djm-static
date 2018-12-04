@@ -1,9 +1,36 @@
-_model: root
+_model: page
+---
+flow:
+
+#### text ####
+text:
+
+I'm Darian, a lead product developer based in South London who enjoys building out software, teams & the culture required to make successful businesses.
+
+Right now, I'm particularly interested in functional programming, distributed systems, observability, security and the emerging serverless landscape.
+
+Since 2008, I've worked with firms of all shapes & sizes: one man bands, small & large agencies, software houses, start-ups & enterprises. For a more detailed work history, please see [LinkedIn](https://linkedin.com/in/darianmoody).
+
+*My inbox is always open* and I mean that: I'm happy to chat about software & teams at any time. Your best bet to catch me is via [email](mailto:mail@djm.org.uk) or otherwise via [direct message on Twitter](https://twitter.com/djm_).
+
+Outside of tech I'm a keen traveller, [F1](https://www.formula1.com/) head, supporter of sound system culture and a life long follower of the [drum](https://www.youtube.com/watch?v=fFW_drkLw9A) [&](https://www.youtube.com/watch?v=e4imUOY-wZw) [bass](https://www.youtube.com/watch?v=PkV4TXZcMTg) scene.
+
+You can find some short posts & threads from me over on [Twitter](https://twitter.com/djm_), some photos on [Instagram](https://instagram.com/_djm), and my credentials are at [Keybase](https://keybase.io/djm). All of my open source work is available over at [GitHub](https://github.com/djm) and I occasionally help out on [StackOverflow](http://stackoverflow.com/users/1774000/darian-moody).
+
+Have a question? [Reach out](mailto:mail@djm.org.uk)!
+----
+alignment: left
+#### image ####
+image: darian-moody.jpg
+----
+label: Tanner St, 2018
+---
+title: Darian Moody - Lead Product Developer
 ---
 header_image: header.jpg
 ---
-title: djm.org.uk
+header_attrib_name: Michael Delaney
 ---
-header_attrib_name: Wyncliffe
+header_attrib_url: https://www.flickr.com/photos/takeiteasybut/7402039052/
 ---
-header_attrib_url: https://www.flickr.com/photos/wyncliffe/14392789523
+lazy_load_images: yes

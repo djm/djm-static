@@ -1,1 +1,9 @@
-model: _blog
+_model: posts
+---
+header_image: header.jpg
+---
+title: Writing
+---
+header_attrib_name: Wyncliffe
+---
+header_attrib_url: https://www.flickr.com/photos/wyncliffe/14392789523

@@ -7,19 +7,21 @@
     {{ render_header(this, background_url=this.header_image, height=300, index=false) }}
   {% else %}
     {{ super() }}
-  {% endif %} 
+  {% endif %}
 {% endblock %}
 
 {% block body %}
   <section class="page">
-    {% if this.flow %}
-      {% for blk in this.flow.blocks %}
-        {% set container = 'container--sm' if blk._flowblock == 'project' else 'container--xs' %}
-        <div class="container {{ container }} block block-{{ blk._flowblock }}">
-          {{ blk }}
-        </div>
-      {% endfor %}
-    {% endif %}
+    <div class="page-blocks">
+      {% if this.flow %}
+        {% for blk in this.flow.blocks %}
+          {% set container = 'container--sm' if blk._flowblock == 'project' else 'container--xs' %}
+          <div class="container {{ container }} block block-{{ blk._flowblock }}">
+            {{ blk }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
     <footer class="container container--xs">
       <hr>
       {% if this.header_attrib_name %}
