@@ -16,6 +16,7 @@
           <ul>
             <li{% if page._path == '/' %} class="active"{% endif %}><a href="/">About</a></li>
             <li{% if 'posts' in page._path %} class="active"{% endif %}><a href="{{ '/posts/'|url }}">Writing</a></li>
+            <li{% if 'speaking' in page._path %} class="active"{% endif %}><a href="{{ '/speaking/'|url }}">Speaking</a></li>
           </ul>
         </nav>
       </div>

@@ -6,6 +6,10 @@
     margin: 2rem 0;
   }
 
+  & p:first-of-type {
+      font-size: 1rem;
+  }
+
   h2,
   h3,
   h4,
@@ -26,7 +30,7 @@
   }
 
   &__title {
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     line-height: 1.2;
     margin: 0;
     text-align: center;
@@ -44,7 +48,7 @@
   &__year {
     color: color(grey);
     display: block;
-    font-size: 1rem;
+    font-size: .8rem;
     text-align: center;
     text-transform: uppercase;
   }
@@ -61,6 +65,7 @@
 
     p {
       margin: 0;
+      margin-bottom: .5rem;
     }
   }
 

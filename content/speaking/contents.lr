@@ -1,0 +1,48 @@
+_model: page
+---
+flow:
+
+#### text ####
+text: This is a list of talks I have given to conferences & meetups; if you'd like me to speak at your event, just [get in touch](mailto:mail@djm.org.uk).
+----
+alignment: left
+#### project ####
+title: Gatsby: Under the Hood
+----
+year: MAR '18
+----
+url: https://speakerdeck.com/djm/gatsby-under-the-hood
+----
+text:
+
+Gatsby has built on the ideas of previous generations of static generators to provide a truly flexible system for baking out static sites.  
+
+In this talk, I will take you under the hood to see how Gatsby’s architecture lets you break free of the constraints you’re used to; and how it utilises modern frontend tech such as React, Browser APIs & GraphQL to allow you to build a truly custom solution.
+----
+images: gatsby-under-the-hood-1.png, gatsby-under-the-hood-2.png, gatsby-under-the-hood-3.png
+----
+class: left
+#### project ####
+title: How I learned to stop worrying and love Hex.pm
+----
+year: FEB '16
+----
+url: https://speakerdeck.com/djm/how-i-learned-to-stop-worrying-and-love-hex-dot-pm
+----
+text:
+
+Publishing a package in a lot of languages usually means bringing the kitchen sink; however, the Elixir ecosystem has made packaging a core concept to the language. Let's see what that means for us.
+
+It covers: an explanation & the history of Hex.pm, the repository; the minimum steps required to make an Elixir package ready; the publishing step; generating docs with ex_doc and pushing them to Hexdocs; and some extra Hex, docs & packaging related tips.
+----
+images: hex-pm-1.png, hex-pm-2.png, hex-pm-3.png
+----
+class: right
+---
+title: Speaking
+---
+header_image: header.jpg
+---
+header_attrib_name: K putt
+---
+header_attrib_url: https://www.flickr.com/photos/k_putt/11792034414/in/photolist-iY2g1b-aC6dCi-mF55Pv-fDVD71-hf4z6-y7tDUr-9RpstC-72hXSg-dFxFBv-3MiXpn-87Te8V-7D9Eyf-cCTs3j-wCUX7-gVo63P-47zLGV-pk1bHJ-aSKbfr-7CfoiH-7R3tcd-4g6wUa-9zFmin-fLcamn-iQizjS-2xHS4v-7eo7Jo-73zAEn-kjkJ5N-xRuJpo-sXSxJz-xMErMX-h1ahBN-eKeYBB-8e1Pdt-6GrAFm-7g93YP-q9KQL6-bAc1Qv-7yQQ3L-8Qnoyb-n5t6gF-77KW8j-794k5H-bXY2RA-umk39-6UaHyi-9YwdZ2-dQZ7zh-aiTz6W-BSGyjx
