@@ -2,13 +2,15 @@ heading: Find out the RSS feed for an iTunes podcast
 ---
 body:
 
-To cut a long story short: I listen to music podcasts a lot and unfortunately a lot of record labels syndicate their content via Apple's iTunes network. Apple seem to go out of their way to make finding the actual original source podcast feed a complete nuisance to find and I absolutely detest iTunes so I wrote this to grab it for me. Now that lovely rant is over, you can use it too..
+_Updated Jan 2019: now hosted via jsDelivr instead of Rawgit. Please update._
+
+To cut a long story short: I listen to music podcasts a lot and many of the record labels syndicate their content via Apple's iTunes network. Apple seem to go out of their way to make finding the actual original source podcast feed a complete nuisance to find so I wrote this to grab it for me - now you can use it too..
 
 ##Install the bookmarklet
 
-1. Drag the following link to your browser's bookmarks bar: <a href="javascript:(function(){var%20newScript=document.createElement('script');newScript.src='https://cdn.rawgit.com/djm/uncover-itunes-rss-bookmarklet/master/bookmarklet.js';document.body.appendChild(newScript);})();">itunes-to-rss</a>
+1. Drag the following link to your browser's bookmarks bar: <a href="javascript:(function(){var%20newScript=document.createElement('script');newScript.src='https://cdn.jsdelivr.net/gh/djm/uncover-itunes-rss-bookmarklet@master/bookmarklet.js';document.body.appendChild(newScript);})();">itunes-to-rss</a>. In later versions of Chrome on Mac, this seems to have stopped working but you can still create your own bookmark and use the URL field to input the copied link (right click, "copy link address").
 
-2. Then visit an appropriate iTunes podcast page, e.g: [The Critical Music podcast](https://itunes.apple.com/gb/podcast/critical-podcast/id293017397).
+2. Then visit an appropriate iTunes podcast page, e.g: [The Critical Music podcast](https://itunes.apple.com/us/podcast/critical-podcast/id1257717757?mt=2).
 
 3. Click the bookmarklet while on the page to reveal the true RSS podcast URL/content feed.
 
@@ -17,6 +19,10 @@ To cut a long story short: I listen to music podcasts a lot and unfortunately a 
 ##Github
 
 The project can be found on Github here: [uncover-itunes-rss-bookmarklet](https://github.com/djm/uncover-itunes-rss-bookmarklet).
+
+###Update - January 2019
+
+[Rawgit](https://rawgit.com/) has been sunset as of late 2018; many thanks to Ryan Grove for keeping it running for so long. The script still works and thus has been moved to its new home at [jsDelivr](https://www.jsdelivr.com), you will need to update your bookmarks by following the same process as above.
 
 
 ---
