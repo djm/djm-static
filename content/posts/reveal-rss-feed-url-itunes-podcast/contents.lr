@@ -2,11 +2,23 @@ heading: Find out the RSS feed for an iTunes podcast
 ---
 body:
 
-_Updated Jan 2019: now hosted via jsDelivr instead of Rawgit. Please update._
+
+_Update, June 2019_
+
+This post was written in 2012 and detailed a way to find the URL. That way doesn't work anymore, but I built a new way:
+
+https://discover-apple-podcast-rss-feed--darianmoody.repl.co/
+
+You can read more about this update at the end of this post.
+
+-----
+
 
 To cut a long story short: I listen to music podcasts a lot and many of the record labels syndicate their content via Apple's iTunes network. Apple seem to go out of their way to make finding the actual original source podcast feed a complete nuisance to find so I wrote this to grab it for me - now you can use it too..
 
 ##Install the bookmarklet
+
+**June 2019: This no longer works, please see the update below**
 
 1. Drag the following link to your browser's bookmarks bar: <a href="javascript:(function(){var%20newScript=document.createElement('script');newScript.src='https://cdn.jsdelivr.net/gh/djm/uncover-itunes-rss-bookmarklet@master/bookmarklet.js';document.body.appendChild(newScript);})();">itunes-to-rss</a>. In later versions of Chrome on Mac, this seems to have stopped working but you can still create your own bookmark and use the URL field to input the copied link (right click, "copy link address").
 
@@ -23,6 +35,19 @@ The project can be found on Github here: [uncover-itunes-rss-bookmarklet](https:
 ###Update - January 2019
 
 [Rawgit](https://rawgit.com/) has been sunset as of late 2018; many thanks to Ryan Grove for keeping it running for so long. The script still works and thus has been moved to its new home at [jsDelivr](https://www.jsdelivr.com), you will need to update your bookmarks by following the same process as above.
+
+###Update - June 2019
+
+Apple have updated how certain requests are served on their domain and implemented a [CORS policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) which disallows scripts from external sources (such as this bookmarklet); it almost certainly wasn't a deliberate attempt to sabotage this, as it is a decent security best practice these days. That said, multiple people emailed me when the bookmarklet stopped working and they were all asking for a solution to the original problem...so I built this:
+
+[Apple Podcast Feed Finder](https://discover-apple-podcast-rss-feed--darianmoody.repl.co/)
+
+The source code is in Python and is open, simply follow the link in the footer. Essentially, CORS is something the browser _should_ abide by but as we fire off the requests manually, we can avoid the policy and access the information we need.
+
+Hope it helps.
+
+
+
 
 
 ---
